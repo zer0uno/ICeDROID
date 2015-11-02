@@ -35,6 +35,7 @@ public class MessageQueueManager {
     }
 
     public void addToCache(Message msg) {
+        //Da modificare, aggiungere secondo certe politiche
         cachedMessage.add(msg);
     }
 
