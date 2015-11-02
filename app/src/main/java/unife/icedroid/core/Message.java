@@ -13,8 +13,6 @@ public class Message implements Serializable {
     private int msgID;
     /** Time when the message was created */
     private double timeCreated;
-    /** Time when the message was received */
-    private double timeReceived;
     /** Time to live of the message */
     private double ttl;
     /** Message priority */
@@ -39,6 +37,18 @@ public class Message implements Serializable {
 
     public void setSubscription(Subscription subscription) {
         this.subscription.copy(subscription);
+    }
+
+    public int getMsgID() {
+        return msgID;
+    }
+
+    public void setMsgID(int msgID) {
+        this.msgID = msgID;
+    }
+
+    public boolean equals(Message msg) {
+        return (this.subscription.equals(msg.subscription) && this.msgID == msg.getMsgID()) ? true : false;
     }
 
 }

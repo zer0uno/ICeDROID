@@ -33,17 +33,18 @@ public class BroadcastReceiveThread implements Runnable {
     @Override
     public void run() {
         try {
-            Log.i("BroadcastReceiveThread", "UDP Socket is up");
+            Log.i(TAG, "UDP Socket is up");
             byte[] data = null;
             while (true) {
                 data = new byte[Settings.MSG_SIZE];
                 DatagramPacket packet = new DatagramPacket(data, data.length);
                 socket.receive(packet);
                 MessageDispatcher.deliver(context, packet);
+                Log.i(TAG, "Received: " + packet.toString());
             }
         } catch (Exception ex) {
             String msg = ex.getMessage();
-            Log.e("BroadcastReceiveThread", (msg != null)? msg : "Error in BroadcastReceiveThread");
+            Log.e(TAG, (msg != null)? msg : "Error in BroadcastReceiveThread");
         }
     }
 }

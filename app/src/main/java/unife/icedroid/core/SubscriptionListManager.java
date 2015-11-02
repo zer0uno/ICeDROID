@@ -7,6 +7,7 @@ import java.util.ArrayList;
 */
 public class SubscriptionListManager {
     private volatile static SubscriptionListManager instance = null;
+
     private ArrayList<Subscription> subscriptionsList;
 
 
@@ -15,6 +16,7 @@ public class SubscriptionListManager {
     }
 
     public static SubscriptionListManager getSubscriptionListManager() {
+
         if (instance == null) {
             synchronized (SubscriptionListManager.class) {
                 if (instance == null) {
@@ -23,6 +25,7 @@ public class SubscriptionListManager {
             }
         }
         return instance;
+
     }
 
     public void add(Subscription subscription) {

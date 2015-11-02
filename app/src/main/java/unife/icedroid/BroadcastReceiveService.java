@@ -19,6 +19,7 @@ public class BroadcastReceiveService extends Service {
             socket = new DatagramSocket();
             recvThread = new Thread(new BroadcastReceiveThread(getApplicationContext(), socket));
             recvThread.start();
+            Log.i(TAG, "BroadcastReceiveThread started");
         } catch (Exception ex) {
             String msg = ex.getMessage();
             Log.e(TAG, (msg != null) ? msg : "onCreate(): An error occurred");
@@ -45,5 +46,6 @@ public class BroadcastReceiveService extends Service {
             String msg = ex.getMessage();
             Log.e(TAG, (msg != null)? msg : "onDestroy(): An error occurred");
         }
+        Log.i(TAG, "BroadcastReceiveService destroyed");
     }
 }

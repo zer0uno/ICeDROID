@@ -68,5 +68,6 @@ public class ICeDROIDActivity extends Activity{
             String msg = ex.getMessage();
             Log.e(TAG, (msg!=null)? msg : "onDestroy(): An error occurred");
         }
+        Log.i(TAG, "ICeDROIDActivity destroyed");
     }
 }

@@ -2,8 +2,13 @@ package unife.icedroid.core;
 
 
 public class Subscription {
+
+    /** Application-level Dissemination Channel of membership */
     private String ADChannel;
+
+    /** App IDentifier */
     private String appID;
+
 
     public String getADChannel() {
         return ADChannel;

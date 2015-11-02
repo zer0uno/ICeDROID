@@ -8,6 +8,9 @@ import android.content.Intent;
 import android.content.Context;
 import unife.icedroid.ADCService;
 
+/**
+ * TODO
+*/
 public class MessageDispatcher {
     private static final String TAG = "MessageDispatcher";
 
@@ -16,8 +19,8 @@ public class MessageDispatcher {
     public static void deliver(Context context, DatagramPacket packet) {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packet.getData());
         try {
-            ObjectInputStream rawData = new ObjectInputStream(byteArrayInputStream);
-            Message message = (Message) rawData.readObject();
+            ObjectInputStream rawMessage = new ObjectInputStream(byteArrayInputStream);
+            Message message = (Message) rawMessage.readObject();
 
             if (message.getTypeOfMsg().equals("regular")) {
                 Intent intent = new Intent(context, ADCService.class);
