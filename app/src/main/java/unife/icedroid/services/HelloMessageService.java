@@ -28,7 +28,13 @@ public class HelloMessageService extends IntentService{
         }, new Date(System.currentTimeMillis()), 25*1000);
     }
 
+    @Override
     protected void onHandleIntent(Intent intent) {
 
+    }
+
+    public void onDestroy() {
+        helloMessageTimer.cancel();
+        super.onDestroy();
     }
 }
