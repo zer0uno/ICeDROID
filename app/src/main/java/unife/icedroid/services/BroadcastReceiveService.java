@@ -1,4 +1,4 @@
-package unife.icedroid;
+package unife.icedroid.services;
 
 import java.net.DatagramSocket;
 import android.app.Service;

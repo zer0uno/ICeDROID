@@ -28,6 +28,10 @@ public class SubscriptionListManager {
 
     }
 
+    public ArrayList<Subscription> getSubscriptionsList() {
+        return subscriptionsList;
+    }
+
     public void add(Subscription subscription) {
         subscriptionsList.add(subscription);
     }

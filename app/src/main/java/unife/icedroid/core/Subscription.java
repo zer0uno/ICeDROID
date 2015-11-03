@@ -9,29 +9,37 @@ public class Subscription {
     /** App IDentifier */
     private String appID;
 
+    public Subscription() {}
+
+    public Subscription(String ADChannel, String appID) {
+        this.ADChannel = ADChannel;
+        this.appID = appID;
+    }
 
     public String getADChannel() {
         return ADChannel;
-    }
-
-    public void setADChannel(String ADChannel) {
-        this.ADChannel = ADChannel;
     }
 
     public String getAppID() {
         return appID;
     }
 
+    public void setADChannel(String ADChannel) {
+        this.ADChannel = ADChannel;
+    }
+
     public void setAppID(String appID) {
         this.appID = appID;
     }
 
-    public boolean equals(Subscription sub) {
-        return ((sub.getADChannel() == this.getADChannel()) && (sub.getAppID() == this.getAppID())) ? true : false;
+    public void copy(Subscription subscription) {
+        ADChannel = subscription.ADChannel;
+        appID = subscription.appID;
     }
 
-    public void copy(Subscription subscription) {
-        ADChannel = subscription.getADChannel();
-        appID = subscription.getAppID();
+    public boolean equals(Subscription subscription) {
+        return (subscription.ADChannel.equals(this.getADChannel())) &&
+                (subscription.appID.equals(this.getAppID()));
     }
+
 }

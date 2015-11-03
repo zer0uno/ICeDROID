@@ -6,7 +6,7 @@ import java.io.ByteArrayInputStream;
 import android.util.Log;
 import android.content.Intent;
 import android.content.Context;
-import unife.icedroid.ADCService;
+import unife.icedroid.services.ADCService;
 
 /**
  * TODO
@@ -20,11 +20,12 @@ public class MessageDispatcher {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packet.getData());
         try {
             ObjectInputStream rawMessage = new ObjectInputStream(byteArrayInputStream);
-            Message message = (Message) rawMessage.readObject();
+            TypeOfMessage message = (TypeOfMessage) rawMessage.readObject();
 
             if (message.getTypeOfMsg().equals("regular")) {
+                Message regularMessage = (Message) message;
                 Intent intent = new Intent(context, ADCService.class);
-                intent.putExtra(EXTRA_ADC_MESSAGE, message);
+                intent.putExtra(EXTRA_ADC_MESSAGE, regularMessage);
                 context.startService(intent);
             } else {
                 //Chiamare HelloMessageService

@@ -11,13 +11,13 @@ public class MessageQueueManager {
     public static double FORWARD_PROBABILITY = 0.3;
 
 
-    private ArrayList<Message> cachedMessage;
+    private ArrayList<MessageIdentity> cachedMessages;
 
     private ArrayList<Message> incomingMessagesDecisionTable;
 
 
     private MessageQueueManager() {
-        cachedMessage = new ArrayList<Message>();
+        cachedMessages = new ArrayList<MessageIdentity>();
         incomingMessagesDecisionTable = new ArrayList<Message>();
     }
 
@@ -34,16 +34,28 @@ public class MessageQueueManager {
 
     }
 
+    public ArrayList<MessageIdentity> getCachedMessages() {
+        return cachedMessages;
+    }
+
     public void addToCache(Message msg) {
         //Da modificare, aggiungere secondo certe politiche
-        cachedMessage.add(msg);
+        cachedMessages.add(msg.getMessageIdentity());
     }
 
     public boolean isCached(Message msg) {
-        return cachedMessage.contains(msg);
+        return cachedMessages.contains(msg);
     }
 
     public boolean isAlreadyDecided(Message msg) {
         return incomingMessagesDecisionTable.contains(msg);
+    }
+
+    public void send(HelloMessage helloMessage) {
+
+    }
+
+    public void send(Message message) {
+
     }
 }

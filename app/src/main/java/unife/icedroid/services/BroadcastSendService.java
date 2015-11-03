@@ -1,4 +1,4 @@
-package unife.icedroid;
+package unife.icedroid.services;
 
 import android.app.Service;
 import android.os.IBinder;
