@@ -25,6 +25,7 @@ public class HelloMessageService extends IntentService{
                 HelloMessage helloMessage = new HelloMessage();
                 MessageQueueManager.getMessageQueueManager().send(helloMessage);
             }
+
         }, new Date(System.currentTimeMillis()), 25*1000);
     }
 
