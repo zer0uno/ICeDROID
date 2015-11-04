@@ -9,8 +9,8 @@ import android.os.Process;
 import android.os.Looper;
 import android.os.Handler;
 import unife.icedroid.core.MessageDispatcher;
-import unife.icedroid.core.MessageQueueManager;
-import unife.icedroid.core.SubscriptionListManager;
+import unife.icedroid.core.managers.MessageQueueManager;
+import unife.icedroid.core.managers.SubscriptionListManager;
 import unife.icedroid.core.Message;
 
 public class ADCService extends Service{

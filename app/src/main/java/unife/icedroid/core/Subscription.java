@@ -5,15 +5,20 @@ public class Subscription {
 
     /** Application-level Dissemination Channel of membership */
     private String ADChannel;
-
     /** App IDentifier */
     private String appID;
+
 
     public Subscription() {}
 
     public Subscription(String ADChannel, String appID) {
         this.ADChannel = ADChannel;
         this.appID = appID;
+    }
+
+    public Subscription(Subscription subscription) {
+        ADChannel = subscription.ADChannel;
+        appID = subscription.appID;
     }
 
     public String getADChannel() {
@@ -30,11 +35,6 @@ public class Subscription {
 
     public void setAppID(String appID) {
         this.appID = appID;
-    }
-
-    public void copy(Subscription subscription) {
-        ADChannel = subscription.ADChannel;
-        appID = subscription.appID;
     }
 
     public boolean equals(Subscription subscription) {

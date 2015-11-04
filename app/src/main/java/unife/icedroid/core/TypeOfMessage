@@ -1,7 +1,5 @@
 package unife.icedroid.core;
 
-import java.io.Serializable;
-
 public interface TypeOfMessage {
 
     public String getTypeOfMsg();

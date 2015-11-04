@@ -1,14 +1,10 @@
 package unife.icedroid.core;
 
-import java.io.Serializable;
-
-public class Message implements TypeOfMessage, Serializable {
+public class Message extends MessageIdentity implements TypeOfMessage {
     //campo statico che ricorda l'id, problema se l'app viene riavviata, da dove riprendere?
 
     /** Type of message (Hello or Regular) */
-    private final String typeOfMsg = "regular";
-    /** Message Identity */
-    private MessageIdentity identity;
+    private String typeOfMsg;
     /** Time when the message was created */
     private double timeCreated;
     /** Time to live of the message */
@@ -21,20 +17,18 @@ public class Message implements TypeOfMessage, Serializable {
     private String data;
 
 
+    public Message(Subscription sub, int msg) {
+        super(sub, msg);
+    }
+
     public String getTypeOfMsg() {
         return typeOfMsg;
     }
 
     public MessageIdentity getMessageIdentity() {
-        return identity;
-    }
 
-    public Subscription getSubscription() {
-        return identity.getSubscription();
-    }
+        return new MessageIdentity(getSubscription(), getMsgID());
 
-    public boolean equals(Message msg) {
-        return identity.equals(msg.identity);
     }
 
 }

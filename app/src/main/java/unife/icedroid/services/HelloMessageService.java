@@ -6,10 +6,11 @@ import java.util.TimerTask;
 import android.app.IntentService;
 import android.content.Intent;
 import unife.icedroid.core.HelloMessage;
-import unife.icedroid.core.MessageQueueManager;
+import unife.icedroid.core.MessageDispatcher;
+import unife.icedroid.core.managers.MessageQueueManager;
+import unife.icedroid.core.managers.NeighborhoodManager;
 
 public class HelloMessageService extends IntentService{
-
     private static final String TAG = "HelloMessageService";
 
     private Timer helloMessageTimer;
@@ -31,7 +32,13 @@ public class HelloMessageService extends IntentService{
 
     @Override
     protected void onHandleIntent(Intent intent) {
-
+        HelloMessage helloMessage = (HelloMessage) intent.getSerializableExtra(MessageDispatcher.
+                                                                                EXTRA_HELLOMESSAGE);
+        boolean newNeighbor = NeighborhoodManager.getNeighborhoodManager().add(helloMessage.
+                                                                                    getHostInfo());
+        if (newNeighbor) {
+            MessageQueueManager.getMessageQueueManager().eraseForwardingDecisionTable();
+        }
     }
 
     public void onDestroy() {

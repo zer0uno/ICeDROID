@@ -9,9 +9,6 @@ import android.content.Context;
 import unife.icedroid.services.ADCService;
 import unife.icedroid.services.HelloMessageService;
 
-/**
- * TODO
-*/
 public class MessageDispatcher {
 
     private static final String TAG = "MessageDispatcher";
@@ -24,33 +21,25 @@ public class MessageDispatcher {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packet.getData());
 
         try {
-
             ObjectInputStream rawMessage = new ObjectInputStream(byteArrayInputStream);
             TypeOfMessage message = (TypeOfMessage) rawMessage.readObject();
 
             Intent intent;
 
             if (message.getTypeOfMsg().equals("regular")) {
-
                 Message regularMessage = (Message) message;
                 intent = new Intent(context, ADCService.class);
                 intent.putExtra(EXTRA_ADC_MESSAGE, regularMessage);
-
             } else {
-
                 HelloMessage helloMessage = (HelloMessage) message;
                 intent = new Intent(context, HelloMessageService.class);
                 intent.putExtra(EXTRA_HELLOMESSAGE, helloMessage);
-
             }
 
             context.startService(intent);
-
         } catch (Exception ex) {
-
             String msg = ex.getMessage();
             Log.e(TAG, (msg != null)? msg : "deliver(): An error occurred");
-
         }
 
     }
