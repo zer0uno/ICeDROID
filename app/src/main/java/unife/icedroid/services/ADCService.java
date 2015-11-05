@@ -18,6 +18,9 @@ public class ADCService extends Service{
     private ADCHandler handler;
 
     private final class ADCHandler extends Handler {
+        public static final double CACHING_PROBABILITY = 0.1;
+        public static final double FORWARD_PROBABILITY = 0.3;
+
         public ADCHandler(Looper looper) {
             super(looper);
         }
@@ -27,7 +30,7 @@ public class ADCService extends Service{
             SubscriptionListManager subscriptionListManager = SubscriptionListManager.getSubscriptionListManager();
             MessageQueueManager messageQueueManager = MessageQueueManager.getMessageQueueManager();
 
-            if (!messageQueueManager.isCached(ADCmessage) && !messageQueueManager.isAlreadyDecided(ADCmessage)) {
+            if (!messageQueueManager.isCached(ADCmessage) && !messageQueueManager.isDiscarded(ADCmessage)) {
                 if (subscriptionListManager.isSubscribedTo(ADCmessage.getSubscription())) {
                     //
                     messageQueueManager.addToCache(ADCmessage);
@@ -35,11 +38,15 @@ public class ADCService extends Service{
                     messageQueueManager.addToCache(ADCmessage);
                 } else {
                     Random random = new Random(System.currentTimeMillis());
-                    if (random.nextDouble() <= MessageQueueManager.CACHING_PROBABILITY) {
+                    if (random.nextDouble() <= CACHING_PROBABILITY) {
                         messageQueueManager.addToCache(ADCmessage);
+                    } else {
+                        messageQueueManager.addToDiscarded(ADCmessage);
                     }
                 }
             }
+
+            //aggiungere la gestione dei messaggi da inviare con la FORWARD_PROBABILITY
 
             stopSelf(msg.arg1);
         }

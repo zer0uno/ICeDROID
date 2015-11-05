@@ -6,9 +6,9 @@ public class Message extends MessageIdentity implements TypeOfMessage {
     /** Type of message (Hello or Regular) */
     private String typeOfMsg;
     /** Time when the message was created */
-    private double timeCreated;
+    private long timeCreated;
     /** Time to live of the message */
-    private double ttl;
+    private long ttl;
     /** Message priority */
     private int priority;
     /** The entire message size, including header and data, in bytes */
@@ -29,6 +29,14 @@ public class Message extends MessageIdentity implements TypeOfMessage {
 
         return new MessageIdentity(getSubscription(), getMsgID());
 
+    }
+
+    public long getTimeCreated() {
+        return timeCreated;
+    }
+
+    public long getTtl() {
+        return ttl;
     }
 
 }

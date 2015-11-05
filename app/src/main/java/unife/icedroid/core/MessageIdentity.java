@@ -27,4 +27,8 @@ public class MessageIdentity implements Serializable {
         return msgID;
     }
 
+    public boolean equals(MessageIdentity msgIdentity) {
+        return (this.msgID == msgIdentity.msgID) && subscription.equals(msgIdentity.subscription);
+    }
+
 }

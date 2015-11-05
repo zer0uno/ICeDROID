@@ -1,6 +1,9 @@
 package unife.icedroid.core.managers;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.Date;
+import java.util.TimerTask;
 
 import unife.icedroid.core.HelloMessage;
 import unife.icedroid.core.Message;
@@ -10,21 +13,24 @@ public class MessageQueueManager {
 
     private volatile static MessageQueueManager instance;
 
-    public static double CACHING_PROBABILITY = 0.1;
-    public static double FORWARD_PROBABILITY = 0.3;
+    private ArrayList<Message> cachedMessages;
+    private ArrayList<MessageIdentity> discardedMessages;
+    private ArrayList<Message> forwardingMessages;
 
-    private ArrayList<MessageIdentity> cachedMessages;
-    private ArrayList<Message> incomingMessagesDecisionTable;
-    private String forwordingDecisionTable;
+    private Timer cachedMessagesTimer;
+    private Timer discardedMessagesTimer;
 
 
     private MessageQueueManager() {
-        cachedMessages = new ArrayList<MessageIdentity>(0);
-        incomingMessagesDecisionTable = new ArrayList<Message>(0);
+        cachedMessages = new ArrayList<Message>(0);
+        discardedMessages = new ArrayList<MessageIdentity>(0);
+        forwardingMessages = new ArrayList<Message>(0);
+
+        cachedMessagesTimer = new Timer();
+        discardedMessagesTimer = new Timer();
     }
 
     public static MessageQueueManager getMessageQueueManager() {
-
         if (instance == null) {
             synchronized (MessageQueueManager.class) {
                 if (instance == null) {
@@ -33,35 +39,71 @@ public class MessageQueueManager {
             }
         }
         return instance;
-
     }
 
-    public ArrayList<MessageIdentity> getCachedMessages() {
-        return cachedMessages;
+    public synchronized ArrayList<MessageIdentity> getCachedMessagesIdentities() {
+        ArrayList<MessageIdentity> messagesIdentities = new ArrayList<MessageIdentity>(0);
+        for (Message msg : cachedMessages) {
+            messagesIdentities.add(msg.getMessageIdentity());
+        }
+        return messagesIdentities;
     }
 
-    public void addToCache(Message msg) {
+    public synchronized void addToCache(final Message msg) {
+        //Devo aggiornare la lista dei messaggi da inviare?
         //Da modificare, aggiungere secondo certe politiche
-        cachedMessages.add(msg.getMessageIdentity());
+        cachedMessages.add(msg);
+
+        Date expirationTime = new Date(msg.getTimeCreated() + msg.getTtl());
+        cachedMessagesTimer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                removeCachedMessage(msg);
+            }
+
+        }, expirationTime);
     }
 
-    public boolean isCached(Message msg) {
+    public synchronized void addToDiscarded(final Message msg) {
+        discardedMessages.add(msg.getMessageIdentity());
+
+        Date expirationTime = new Date(msg.getTimeCreated() + msg.getTtl());
+        discardedMessagesTimer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+                removeDiscardedMessage(msg);
+            }
+
+        }, expirationTime);
+    }
+
+    public synchronized boolean isCached(Message msg) {
         return cachedMessages.contains(msg);
     }
 
-    public boolean isAlreadyDecided(Message msg) {
-        return incomingMessagesDecisionTable.contains(msg);
+    public synchronized boolean isDiscarded(Message msg) {
+        return discardedMessages.contains(msg.getMessageIdentity());
     }
 
-    public void send(HelloMessage helloMessage) {
-
-    }
-
-    public void send(Message message) {
+    public synchronized void send(HelloMessage helloMessage) {
 
     }
 
-    public void eraseForwardingDecisionTable() {
+    public synchronized void send(Message message) {
 
+    }
+
+    public synchronized void removeCachedMessage(Message msg) {
+        cachedMessages.remove(msg);
+    }
+
+    public synchronized void removeDiscardedMessage(Message msg) {
+        discardedMessages.remove(msg.getMessageIdentity());
+    }
+
+    public synchronized void eraseForwardingMessages() {
+        forwardingMessages = new ArrayList<Message>(0);
     }
 }

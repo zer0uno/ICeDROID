@@ -25,10 +25,6 @@ public class Subscription {
         return ADChannel;
     }
 
-    public String getAppID() {
-        return appID;
-    }
-
     public void setADChannel(String ADChannel) {
         this.ADChannel = ADChannel;
     }
@@ -38,8 +34,8 @@ public class Subscription {
     }
 
     public boolean equals(Subscription subscription) {
-        return (subscription.ADChannel.equals(this.getADChannel())) &&
-                (subscription.appID.equals(this.getAppID()));
+        return (subscription.ADChannel.equals(ADChannel)) &&
+                (subscription.appID.equals(appID));
     }
 
 }

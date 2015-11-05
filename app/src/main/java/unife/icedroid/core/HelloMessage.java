@@ -16,7 +16,7 @@ public class HelloMessage implements TypeOfMessage, Serializable {
         hostInfo = new HostInfo(Settings.HOST_IP,
                                 SubscriptionListManager.getSubscriptionListManager().
                                                                             getSubscriptionsList(),
-                                MessageQueueManager.getMessageQueueManager().getCachedMessages());
+                                MessageQueueManager.getMessageQueueManager().getCachedMessagesIdentities());
     }
 
     public String getTypeOfMsg() {

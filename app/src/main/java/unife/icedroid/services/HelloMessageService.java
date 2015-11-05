@@ -37,7 +37,7 @@ public class HelloMessageService extends IntentService{
         boolean newNeighbor = NeighborhoodManager.getNeighborhoodManager().add(helloMessage.
                                                                                     getHostInfo());
         if (newNeighbor) {
-            MessageQueueManager.getMessageQueueManager().eraseForwardingDecisionTable();
+            MessageQueueManager.getMessageQueueManager().eraseForwardingMessages();
         }
     }
 
