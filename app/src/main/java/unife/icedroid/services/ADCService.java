@@ -47,6 +47,7 @@ public class ADCService extends Service{
             }
 
             //aggiungere la gestione dei messaggi da inviare con la FORWARD_PROBABILITY
+            //aggiungere anche la gestione dell'hellomessage per togliere un messaghio dalla lista dei messaggi da inviae se tutti hanno quel messaggio
 
             stopSelf(msg.arg1);
         }

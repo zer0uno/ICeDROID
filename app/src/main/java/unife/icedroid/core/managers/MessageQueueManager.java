@@ -8,6 +8,7 @@ import java.util.TimerTask;
 import unife.icedroid.core.HelloMessage;
 import unife.icedroid.core.Message;
 import unife.icedroid.core.MessageIdentity;
+import unife.icedroid.core.TypeOfMessage;
 
 public class MessageQueueManager {
 
@@ -15,7 +16,8 @@ public class MessageQueueManager {
 
     private ArrayList<Message> cachedMessages;
     private ArrayList<MessageIdentity> discardedMessages;
-    private ArrayList<Message> forwardingMessages;
+    private ArrayList<TypeOfMessage> forwardingMessages;
+    private int index;
 
     private Timer cachedMessagesTimer;
     private Timer discardedMessagesTimer;
@@ -24,7 +26,8 @@ public class MessageQueueManager {
     private MessageQueueManager() {
         cachedMessages = new ArrayList<Message>(0);
         discardedMessages = new ArrayList<MessageIdentity>(0);
-        forwardingMessages = new ArrayList<Message>(0);
+        forwardingMessages = new ArrayList<TypeOfMessage>(0);
+        index = 0;
 
         cachedMessagesTimer = new Timer();
         discardedMessagesTimer = new Timer();
@@ -50,7 +53,6 @@ public class MessageQueueManager {
     }
 
     public synchronized void addToCache(final Message msg) {
-        //Devo aggiornare la lista dei messaggi da inviare?
         //Da modificare, aggiungere secondo certe politiche
         cachedMessages.add(msg);
 
@@ -88,15 +90,43 @@ public class MessageQueueManager {
     }
 
     public synchronized void send(HelloMessage helloMessage) {
-
+        forwardingMessages.add(0, helloMessage);
     }
 
     public synchronized void send(Message message) {
+        //aggiungere il messaggio nella coda secondo determinate politiche
+        //FIFO
+        forwardingMessages.add(message);
+    }
 
+    public synchronized void updateForwardingMessages() {
+        //ricontrollare per tutti i messaggi se dagli hellomessagge risulta che tutti ce l'hanno
+    }
+
+    public synchronized TypeOfMessage getMessage() {
+        TypeOfMessage message;
+        if (index < forwardingMessages.size()) {
+            message = forwardingMessages.get(index);
+            index++;
+        } else {
+            message = forwardingMessages.get(0);
+            index = 1;
+        }
+        return message;
     }
 
     public synchronized void removeCachedMessage(Message msg) {
         cachedMessages.remove(msg);
+
+        for (int i=0; i<forwardingMessages.size(); i++) {
+            if (forwardingMessages.get(i).getTypeOfMsg() == msg.getTypeOfMsg()) {
+                Message m = (Message) forwardingMessages.get(i);
+                if (msg.equals(m)) {
+                    forwardingMessages.remove(i);
+                    break;
+                }
+            }
+        }
     }
 
     public synchronized void removeDiscardedMessage(Message msg) {
@@ -104,6 +134,6 @@ public class MessageQueueManager {
     }
 
     public synchronized void eraseForwardingMessages() {
-        forwardingMessages = new ArrayList<Message>(0);
+        forwardingMessages = new ArrayList<TypeOfMessage>(0);
     }
 }
