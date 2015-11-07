@@ -1,42 +1,97 @@
 package unife.icedroid.core;
 
-public class Message extends MessageIdentity implements TypeOfMessage {
-    //campo statico che ricorda l'id, problema se l'app viene riavviata, da dove riprendere?
+import java.io.Serializable;
+import java.util.Date;
 
-    /** Type of message (Hello or Regular) */
-    private String typeOfMsg;
-    /** Time when the message was created */
-    private long timeCreated;
-    /** Time to live of the message */
+public class Message implements Serializable {
+
+    private static int counterOfmsgID;
+
+    private String typeOfMessage;
+    private String hostID;
+    private String hostUsername;
+    private int msgID;
+    private Date creationTime;
+    private Date receptionTime;
     private long ttl;
-    /** Message priority */
-    private int priority;
-    /** The entire message size, including header and data, in bytes */
     private int size;
-    /** The message data */
-    private String data;
 
 
-    public Message(Subscription sub, int msg) {
-        super(sub, msg);
+    public String getTypeOfMessage() {
+        return typeOfMessage;
     }
 
-    public String getTypeOfMsg() {
-        return typeOfMsg;
+    public String getHostID() {
+        return hostID;
     }
 
-    public MessageIdentity getMessageIdentity() {
-
-        return new MessageIdentity(getSubscription(), getMsgID());
-
+    public String getHostUsername() {
+        return hostUsername;
     }
 
-    public long getTimeCreated() {
-        return timeCreated;
+    public int getMsgID() {
+        return msgID;
+    }
+
+    public Date getCreationTime() {
+        return creationTime;
+    }
+
+    public Date getReceptionTime() {
+        return receptionTime;
     }
 
     public long getTtl() {
         return ttl;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setTypeOfMessage(String type) {
+        typeOfMessage = type;
+    }
+
+    public void setHostID(String id) {
+        hostID = id;
+    }
+
+    public void setHostUsername(String username) {
+        hostUsername = username;
+    }
+
+    public void setMsgID() {
+        msgID = counterOfmsgID;
+        incrementCounterOfmsgID();
+    }
+
+    public void setCreationTime(Date time) {
+        creationTime = time;
+    }
+
+    public void setReceptionTime(Date time) {
+        receptionTime = time;
+    }
+
+    public void setTtl(long period) {
+        ttl = period;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public void resetCounterOfmsgID() {
+        counterOfmsgID = 0;
+    }
+
+    private void incrementCounterOfmsgID() {
+        if(counterOfmsgID == Integer.MAX_VALUE) {
+            resetCounterOfmsgID();
+        } else {
+            counterOfmsgID++;
+        }
     }
 
 }

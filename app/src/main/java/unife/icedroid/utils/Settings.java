@@ -25,9 +25,7 @@ public class Settings {
     //Message size
     public static final int MSG_SIZE = 2048;
 
-    /**
-     *  TO-DO
-    */
+
     public static String getIPAddress() throws ImpossibleToGetIPAddress {
         Random randGen = new Random(System.currentTimeMillis());
         ArrayList<String> results = null;

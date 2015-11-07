@@ -1,30 +1,27 @@
 package unife.icedroid.core;
 
-import java.io.Serializable;
-import unife.icedroid.core.managers.MessageQueueManager;
-import unife.icedroid.core.managers.SubscriptionListManager;
-import unife.icedroid.utils.Settings;
+import java.util.ArrayList;
 
-public class HelloMessage implements TypeOfMessage, Serializable {
+public class HelloMessage extends Message {
 
-    private String typeOfMsg;
-    private HostInfo hostInfo;
+    private ArrayList<Subscription> hostSubscriptions;
+    private ArrayList<RegularMessage> cachedMessages;
 
 
-    public HelloMessage() {
-        typeOfMsg = "hello";
-        hostInfo = new HostInfo(Settings.HOST_IP,
-                                SubscriptionListManager.getSubscriptionListManager().
-                                                                            getSubscriptionsList(),
-                                MessageQueueManager.getMessageQueueManager().getCachedMessagesIdentities());
+    public ArrayList<Subscription> getHostSubscriptions() {
+        return hostSubscriptions;
     }
 
-    public String getTypeOfMsg() {
-        return typeOfMsg;
+    public ArrayList<RegularMessage> getCachedMessages() {
+        return cachedMessages;
     }
 
-    public HostInfo getHostInfo() {
-        return hostInfo;
+    public void setHostSubscriptions(ArrayList<Subscription> subscriptions) {
+        hostSubscriptions = subscriptions;
+    }
+
+    public void setCachedMessages(ArrayList<RegularMessage> messages) {
+        cachedMessages = messages;
     }
 
 }

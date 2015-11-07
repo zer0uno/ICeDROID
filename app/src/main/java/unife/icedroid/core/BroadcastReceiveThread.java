@@ -8,9 +8,6 @@ import android.util.Log;
 import android.content.Context;
 import unife.icedroid.utils.Settings;
 
-/**
- *  TODO
-*/
 public class BroadcastReceiveThread implements Runnable {
     private static final String TAG = "BroadcastReceiveThread";
 
@@ -24,6 +21,7 @@ public class BroadcastReceiveThread implements Runnable {
             InetAddress broadcastWildcard = InetAddress.getByName("0.0.0.0");
             InetSocketAddress addr = new InetSocketAddress(broadcastWildcard, Settings.RECV_PORT);
             this.socket.bind(addr);
+
         } catch (Exception ex) {
             String msg = ex.getMessage();
             Log.e(TAG, (msg != null)? msg : "Socket error");
@@ -42,6 +40,7 @@ public class BroadcastReceiveThread implements Runnable {
                 MessageDispatcher.deliver(context, packet);
                 Log.i(TAG, "Received: " + packet.toString());
             }
+
         } catch (Exception ex) {
             String msg = ex.getMessage();
             Log.e(TAG, (msg != null)? msg : "Error in BroadcastReceiveThread");

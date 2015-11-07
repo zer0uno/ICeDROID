@@ -1,7 +1,0 @@
-package unife.icedroid.core;
-
-public interface TypeOfMessage {
-
-    public String getTypeOfMsg();
-
-}

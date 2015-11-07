@@ -7,16 +7,15 @@ import java.util.TimerTask;
 
 import unife.icedroid.core.HelloMessage;
 import unife.icedroid.core.Message;
-import unife.icedroid.core.MessageIdentity;
-import unife.icedroid.core.TypeOfMessage;
+import unife.icedroid.core.RegularMessage;
 
 public class MessageQueueManager {
 
     private volatile static MessageQueueManager instance;
 
-    private ArrayList<Message> cachedMessages;
-    private ArrayList<MessageIdentity> discardedMessages;
-    private ArrayList<TypeOfMessage> forwardingMessages;
+    private ArrayList<RegularMessage> cachedMessages;
+    private ArrayList<RegularMessage> discardedMessages;
+    private ArrayList<RegularMessage> forwardingMessages;
     private int index;
 
     private Timer cachedMessagesTimer;
@@ -24,9 +23,9 @@ public class MessageQueueManager {
 
 
     private MessageQueueManager() {
-        cachedMessages = new ArrayList<Message>(0);
-        discardedMessages = new ArrayList<MessageIdentity>(0);
-        forwardingMessages = new ArrayList<TypeOfMessage>(0);
+        cachedMessages = new ArrayList<>(0);
+        discardedMessages = new ArrayList<>(0);
+        forwardingMessages = new ArrayList<>(0);
         index = 0;
 
         cachedMessagesTimer = new Timer();

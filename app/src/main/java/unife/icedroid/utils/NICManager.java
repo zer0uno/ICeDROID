@@ -1,14 +1,14 @@
 package unife.icedroid.utils;
 
 import android.util.Log;
+
+import java.util.ArrayList;
+
 import unife.icedroid.exceptions.WifiAdhocImpossibleToEnable;
 import unife.icedroid.exceptions.WifiAdhocImpossibleToDisable;
 
 public class NICManager {
 
-    /**
-     * TO-DO
-    */
     public static void startWifiAdhoc() throws WifiAdhocImpossibleToEnable {
         try {
             String cmd;
@@ -28,7 +28,12 @@ public class NICManager {
             cmd = "ip addr add " + Settings.getIPAddress() + Settings.NW_MASK + " broadcast " + Settings.NW_BROADCAST_ADDRESS + " dev " + Settings.NW_IF;
             Utils.rootExec(cmd);
 
-            //TO-DO aggiungere un controllo, se effettivamente l'interfaccia è in ad-hoc, per esempio con una grep
+            //Controls to check that the interface is on ad-hoc mode and on the right essid
+            cmd = "iwconfig" + Settings.NW_IF;
+            ArrayList<String> results = Utils.exec(cmd);
+            if (! containsSubstring(results, "Mode:Ad-Hoc") || ! containsSubstring(results, "ESSID " + Settings.NW_ESSID)) {
+                throw new WifiAdhocImpossibleToEnable("Impossible to enable Wifi Ad-Hoc");
+            }
 
         } catch (Exception ex) {
             String msg = ex.getMessage();
@@ -37,9 +42,6 @@ public class NICManager {
         }
     }
 
-    /**
-     * TO-DO
-    */
     public static void stopWifiAdhoc() throws WifiAdhocImpossibleToDisable {
         try {
             String cmd;
@@ -55,12 +57,26 @@ public class NICManager {
             cmd = "ip link set " + Settings.NW_IF + " up";
             Utils.rootExec(cmd);
 
-            //TO-DO aggiungere un controllo, se effettivamente l'interfaccia è tolta da ad-hoc, per esempio con una grep
+            //Controls to check that the interface is not on ad-hoc mode
+            cmd = "iwconfig" + Settings.NW_IF;
+            ArrayList<String> results = Utils.exec(cmd);
+            if (containsSubstring(results, "Mode:Ad-Hoc")) {
+                throw new WifiAdhocImpossibleToDisable("Impossible to disable Wifi Ad-Hoc");
+            }
 
         } catch (Exception ex) {
             String msg = ex.getMessage();
-            Log.e("startWifiAdhoc()", (msg != null)? msg : "Impossible to disable Wifi Ad-Hoc");
+            Log.e("stopWifiAdhoc()", (msg != null)? msg : "Impossible to disable Wifi Ad-Hoc");
             throw new WifiAdhocImpossibleToDisable("Impossible to disable Wifi Ad-Hoc");
         }
+    }
+
+    private static boolean containsSubstring (ArrayList<String> results, String substring) {
+        for (String line : results) {
+            if (line.contains(substring)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

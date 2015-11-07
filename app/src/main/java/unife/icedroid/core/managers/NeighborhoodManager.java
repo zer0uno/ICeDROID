@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import unife.icedroid.core.HostInfo;
 import unife.icedroid.core.NeighborInfo;
 
 public class NeighborhoodManager {
 
     private volatile static NeighborhoodManager instance;
+    private static long ttlOfNeighbor = 35*1000;
 
-    private Timer neighborhoodManagerTimer;
     private ArrayList<NeighborInfo> neighborsList;
+    private Timer neighborhoodManagerTimer;
 
 
     private NeighborhoodManager() {
+        neighborsList = new ArrayList<>(0);
         neighborhoodManagerTimer = new Timer();
-        neighborsList = new ArrayList<NeighborInfo>(0);
     }
 
     public static NeighborhoodManager getNeighborhoodManager() {
@@ -31,52 +31,51 @@ public class NeighborhoodManager {
         return instance;
     }
 
-    public synchronized boolean add(HostInfo hostInfo) {
+    public synchronized boolean add(NeighborInfo neighbor) {
         boolean newNeighbor = false;
-        NeighborInfo neighborInfo = contains(hostInfo.getHostID());
+        int index = isNeighborPresent(neighbor);
 
-        if (neighborInfo != null) {
-            neighborInfo.setSubscriptionsList(hostInfo.getSubscriptionsList());
-            neighborInfo.setCachedMessages(hostInfo.getCachedMessages());
-            neighborInfo.setLastTimeSeen();
+        if (index != -1) {
+            neighborsList.add(index, neighbor);
         } else {
-            neighborInfo = new NeighborInfo(hostInfo);
-            neighborsList.add(neighborInfo);
+            neighborsList.add(neighbor);
+            newNeighbor = true;
         }
 
-        NeighborRemoveTask task = new NeighborRemoveTask(this, new NeighborInfo(neighborInfo));
-        neighborhoodManagerTimer.schedule(task, new Date(neighborInfo.getLastTimeSeen() + 60 * 1000));
+        NeighborRemoveTask task = new NeighborRemoveTask(this, neighbor);
+        Date expirationTime = new Date(neighbor.getLastTimeSeen().getTime() + ttlOfNeighbor);
+        neighborhoodManagerTimer.schedule(task, expirationTime);
 
         return newNeighbor;
     }
 
-    public synchronized void remove(NeighborInfo neighborInfo) {
-        neighborsList.remove(neighborInfo);
+    public synchronized void remove(NeighborInfo neighbor) {
+        neighborsList.remove(neighbor);
     }
 
-    private synchronized NeighborInfo contains(String hostID) {
-        for (NeighborInfo nb : neighborsList) {
-            if (nb.getHostID() == hostID) {
-                return nb;
+    private int isNeighborPresent(NeighborInfo neighbor) {
+        for (int i = 0; i < neighborsList.size(); i++) {
+            if (neighbor.equals(neighborsList.get(i))) {
+                return i;
             }
         }
-        return  null;
+        return -1;
     }
 
     private class NeighborRemoveTask extends TimerTask {
 
         private NeighborhoodManager neighborhoodManager;
-        private NeighborInfo neighborInfo;
+        private NeighborInfo neighbor;
 
         public NeighborRemoveTask(NeighborhoodManager neighborhoodManager,
-                                                                        NeighborInfo neighborInfo) {
+                                  NeighborInfo neighbor) {
             this.neighborhoodManager = neighborhoodManager;
-            this.neighborInfo = neighborInfo;
+            this.neighbor = neighbor;
         }
 
         @Override
         public void run() {
-            neighborhoodManager.remove(neighborInfo);
+            neighborhoodManager.remove(neighbor);
         }
 
     }

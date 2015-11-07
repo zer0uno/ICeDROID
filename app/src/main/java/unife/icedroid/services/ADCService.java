@@ -13,15 +13,12 @@ import unife.icedroid.core.managers.MessageQueueManager;
 import unife.icedroid.core.managers.SubscriptionListManager;
 import unife.icedroid.core.Message;
 
-public class ADCService extends Service{
+public class ADCService extends Service {
     private HandlerThread thread;
     private ADCHandler handler;
 
     private final class ADCHandler extends Handler {
-        public static final double CACHING_PROBABILITY = 0.1;
-        public static final double FORWARD_PROBABILITY = 0.3;
-
-        public ADCHandler(Looper looper) {
+                public ADCHandler(Looper looper) {
             super(looper);
         }
 
