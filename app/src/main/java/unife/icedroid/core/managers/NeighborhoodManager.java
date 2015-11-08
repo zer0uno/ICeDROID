@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import unife.icedroid.core.NeighborInfo;
+import unife.icedroid.core.RegularMessage;
 
 public class NeighborhoodManager {
 
@@ -51,6 +52,27 @@ public class NeighborhoodManager {
 
     public synchronized void remove(NeighborInfo neighbor) {
         neighborsList.remove(neighbor);
+    }
+
+    public synchronized boolean isThereNeighborInterestedToMessage(RegularMessage msg) {
+        for (NeighborInfo neighbor : neighborsList) {
+            //The neighbor must be subscripted to the same subscription and must not have
+            //the message in its own cache
+            if (neighbor.getHostSubscriptions().contains(msg.getSubscription()) &&
+                ! neighbor.getCachedMessages().contains(msg)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized boolean isThereNeighborSubscribedToChannel(String channel) {
+        for (NeighborInfo neighbor : neighborsList) {
+            if (neighbor.getHostChannels().contains(channel)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private int isNeighborPresent(NeighborInfo neighbor) {

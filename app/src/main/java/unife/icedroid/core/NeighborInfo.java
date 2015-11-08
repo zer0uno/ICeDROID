@@ -1,5 +1,6 @@
 package unife.icedroid.core;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -61,6 +62,17 @@ public class NeighborInfo {
 
     public void setCachedMessages(ArrayList<RegularMessage> messages) {
         cachedMessages = messages;
+    }
+
+    public ArrayList<String> getHostChannels() {
+        ArrayList<String> channels = new ArrayList<>(0);
+        for (Subscription sub : hostSubscriptions) {
+            String channel = sub.getChannelID();
+            if (! channels.contains(channel)) {
+                channels.add(channel);
+            }
+        }
+        return channels;
     }
 
     public boolean equals(NeighborInfo nb) {

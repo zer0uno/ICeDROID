@@ -24,7 +24,7 @@ public class HelloMessageService extends IntentService{
             @Override
             public void run() {
                 HelloMessage helloMessage = new HelloMessage();
-                messageQueueManager.send(helloMessage);
+                messageQueueManager.addToForwardingMessages(helloMessage);
             }
 
         }, new Date(System.currentTimeMillis()), 25*1000);
@@ -44,10 +44,14 @@ public class HelloMessageService extends IntentService{
                                                  hostSubscription, cachedMessages);
         boolean newNeighbor = NeighborhoodManager.getNeighborhoodManager().add(neighbor);
 
+        //If there is a new neighbor then there's need to recalculate forwarding messages
+        if (newNeighbor) {
+            intent = new Intent(this, ApplevDisseminationChannelService.class);
+            intent.putExtra(Constants.EXTRA_NEW_NEIGHBOR, true);
+            startService(intent);
+        }
         /**
          * TODO
-         * newNeighbor è un flag che mi indica se un nuovo vicino è stato aggiunto.
-         * Nel caso un nuovo vicino è stato aggiunto bisogna cancellare la tabella con le decisioni messaggi da inoltrare.
          * Bisogna anche capire se smettere di trasmettere quando si è capito che tutti i vicini hanno ricevuto il messaggio e quindi se è necessario
          * che l'aggiunta di un hellomessage scateni un controllo sulla tabella delle decisioni
         */

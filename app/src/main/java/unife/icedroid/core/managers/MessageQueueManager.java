@@ -1,9 +1,6 @@
 package unife.icedroid.core.managers;
 
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.Date;
-import java.util.TimerTask;
+import java.util.*;
 
 import unife.icedroid.core.HelloMessage;
 import unife.icedroid.core.Message;
@@ -15,18 +12,18 @@ public class MessageQueueManager {
 
     private ArrayList<RegularMessage> cachedMessages;
     private ArrayList<RegularMessage> discardedMessages;
-    private ArrayList<RegularMessage> forwardingMessages;
-    private int index;
-
+    private ArrayList<Message> forwardingMessages;
     private Timer cachedMessagesTimer;
     private Timer discardedMessagesTimer;
+
+    private static int indexForwardingMessages;
 
 
     private MessageQueueManager() {
         cachedMessages = new ArrayList<>(0);
         discardedMessages = new ArrayList<>(0);
         forwardingMessages = new ArrayList<>(0);
-        index = 0;
+        indexForwardingMessages = 0;
 
         cachedMessagesTimer = new Timer();
         discardedMessagesTimer = new Timer();
@@ -43,84 +40,123 @@ public class MessageQueueManager {
         return instance;
     }
 
-    public synchronized ArrayList<MessageIdentity> getCachedMessagesIdentities() {
-        ArrayList<MessageIdentity> messagesIdentities = new ArrayList<MessageIdentity>(0);
-        for (Message msg : cachedMessages) {
-            messagesIdentities.add(msg.getMessageIdentity());
+    public boolean isCached(RegularMessage msg) {
+        synchronized (cachedMessages) {
+            return cachedMessages.contains(msg);
         }
-        return messagesIdentities;
     }
 
-    public synchronized void addToCache(final Message msg) {
-        //Da modificare, aggiungere secondo certe politiche
-        cachedMessages.add(msg);
+    public
+    boolean isDiscarded(RegularMessage msg) {
+        synchronized (discardedMessages) {
+            return discardedMessages.contains(msg);
+        }
+    }
 
-        Date expirationTime = new Date(msg.getTimeCreated() + msg.getTtl());
-        cachedMessagesTimer.schedule(new TimerTask() {
-
-            @Override
-            public void run() {
-                removeCachedMessage(msg);
+    public void addToCache(final RegularMessage msg) {
+        /**
+         * TODO
+         * Aggiungere politiche di caching
+        */
+        if (! isExpired(msg)) {
+            synchronized (cachedMessages) {
+                cachedMessages.add(msg);
             }
 
-        }, expirationTime);
+            //If the msg TTL isn't infinite then set a timer to delete it.
+            if (msg.getTtl() != Message.INFINITE_TTL) {
+                cachedMessagesTimer.schedule(new TimerTask() {
+
+                    @Override
+                    public void run() {
+                        removeFromQueue(cachedMessages, msg);
+                    }
+
+                }, new Date(msg.getCreationTime().getTime() + msg.getTtl()));
+            }
+        }
     }
 
-    public synchronized void addToDiscarded(final Message msg) {
-        discardedMessages.add(msg.getMessageIdentity());
+    public void addToDiscarded(final RegularMessage msg) {
+        if (! isExpired(msg)) {
 
-        Date expirationTime = new Date(msg.getTimeCreated() + msg.getTtl());
-        discardedMessagesTimer.schedule(new TimerTask() {
-
-            @Override
-            public void run() {
-                removeDiscardedMessage(msg);
+            msg.setContentData(null);
+            synchronized (discardedMessages) {
+                discardedMessages.add(msg);
             }
 
-        }, expirationTime);
-    }
+            //If the msg TTL isn't infinite then set a timer to delete it.
+            if (msg.getTtl() != Message.INFINITE_TTL) {
+                discardedMessagesTimer.schedule(new TimerTask() {
 
-    public synchronized boolean isCached(Message msg) {
-        return cachedMessages.contains(msg);
-    }
+                    @Override
+                    public void run() {
+                        removeFromQueue(discardedMessages, msg);
+                    }
 
-    public synchronized boolean isDiscarded(Message msg) {
-        return discardedMessages.contains(msg.getMessageIdentity());
-    }
-
-    public synchronized void send(HelloMessage helloMessage) {
-        forwardingMessages.add(0, helloMessage);
-    }
-
-    public synchronized void send(Message message) {
-        //aggiungere il messaggio nella coda secondo determinate politiche
-        //FIFO
-        forwardingMessages.add(message);
-    }
-
-    public synchronized void updateForwardingMessages() {
-        //ricontrollare per tutti i messaggi se dagli hellomessagge risulta che tutti ce l'hanno
-    }
-
-    public synchronized TypeOfMessage getMessage() {
-        TypeOfMessage message;
-        if (index < forwardingMessages.size()) {
-            message = forwardingMessages.get(index);
-            index++;
-        } else {
-            message = forwardingMessages.get(0);
-            index = 1;
+                }, new Date(msg.getCreationTime().getTime() + msg.getTtl()));
+            }
         }
-        return message;
     }
 
-    public synchronized void removeCachedMessage(Message msg) {
-        cachedMessages.remove(msg);
+    public void addToForwardingMessages(Message msg) {
+        synchronized (forwardingMessages) {
 
-        for (int i=0; i<forwardingMessages.size(); i++) {
-            if (forwardingMessages.get(i).getTypeOfMsg() == msg.getTypeOfMsg()) {
-                Message m = (Message) forwardingMessages.get(i);
-                if (msg.equals(m)) {
+            //Hello Messages have the highest priority.
+            //There can't be two hello messages in the forwarding queue, so it must be checked
+            //if there is one, if there is it must be removed and substituted.
+            if (msg.getTypeOfMessage().equals(HelloMessage.HELLO_MESSAGE)) {
+                removeHelloMessageFromForwadingMessages();
+                forwardingMessages.add(indexForwardingMessages, msg);
+
+            } else {
+                /**
+                 * TODO
+                 * Implementare delle politiche di forwarding
+                */
+                forwardingMessages.add(msg);
+            }
+
+            forwardingMessages.notifyAll();
+
+        }
+
+    }
+
+    public ArrayList<RegularMessage> getCachedMessages() {
+        return cachedMessages;
+    }
+
+    public void removeFromQueue(ArrayList<RegularMessage> queue, RegularMessage msg) {
+        synchronized (queue) {
+            queue.remove(msg);
+        }
+    }
+
+    public void removeRegularMessagesFromForwardingMessages() {
+        synchronized (forwardingMessages) {
+            Message helloMessage = null;
+            //Save the hello message, if it is present
+            for (Message msg : forwardingMessages) {
+                if (msg.getTypeOfMessage().equals(HelloMessage.HELLO_MESSAGE)) {
+                    helloMessage = msg;
+                    break;
+                }
+            }
+
+            forwardingMessages = new ArrayList<>(0);
+            //If there was an hello message then re-insert it
+            if (helloMessage != null) {
+                forwardingMessages.add(helloMessage);
+            }
+        }
+    }
+
+    public void removeHelloMessageFromForwadingMessages() {
+        synchronized (forwardingMessages) {
+            for (int i = 0; i < forwardingMessages.size(); i++) {
+                if (forwardingMessages.get(i).getTypeOfMessage().equals(
+                                                                    HelloMessage.HELLO_MESSAGE)) {
                     forwardingMessages.remove(i);
                     break;
                 }
@@ -128,11 +164,42 @@ public class MessageQueueManager {
         }
     }
 
-    public synchronized void removeDiscardedMessage(Message msg) {
-        discardedMessages.remove(msg.getMessageIdentity());
+    public Message getMessageToSend() {
+        synchronized (forwardingMessages) {
+
+            Message message = null;
+            while (message == null) {
+                while (forwardingMessages.size() == 0) {
+                    try {
+                        forwardingMessages.wait();
+                    } catch (Exception ex) {
+                    }
+                }
+
+                if (indexForwardingMessages >= forwardingMessages.size()) {
+                    indexForwardingMessages = 0;
+                }
+
+                message = forwardingMessages.get(indexForwardingMessages);
+
+                if (isExpired(message)) {
+                    forwardingMessages.remove(indexForwardingMessages);
+                    message = null;
+                }
+                indexForwardingMessages++;
+            }
+
+            return message;
+        }
     }
 
-    public synchronized void eraseForwardingMessages() {
-        forwardingMessages = new ArrayList<TypeOfMessage>(0);
+    private boolean isExpired(Message msg) {
+        if (msg.getTtl() != Message.INFINITE_TTL) {
+            if (msg.getCreationTime().getTime() + msg.getTtl() >= System.currentTimeMillis()) {
+                return true;
+            }
+        }
+        return false;
     }
+
 }

@@ -1,12 +1,9 @@
 package unife.icedroid.core.managers;
 
 import java.util.ArrayList;
-
+import unife.icedroid.core.RegularMessage;
 import unife.icedroid.core.Subscription;
 
-/**
- *  TODO
-*/
 public class SubscriptionListManager {
 
     private volatile static SubscriptionListManager instance = null;
@@ -29,34 +26,17 @@ public class SubscriptionListManager {
         return instance;
     }
 
-    public ArrayList<Subscription> getSubscriptionsList() {
-        ArrayList<Subscription> newSubscriptionsList = new ArrayList<Subscription>();
+    public synchronized boolean isSubscribedToMessage(RegularMessage msg) {
+        return subscriptionsList.contains(msg.getSubscription());
+    }
+
+    public synchronized boolean isSubscribedToChannel(RegularMessage msg) {
         for (Subscription sub : subscriptionsList) {
-            Subscription newSub = new Subscription(sub);
-            newSubscriptionsList.add(newSub);
-        }
-        return newSubscriptionsList;
-    }
-
-    public void add(Subscription subscription) {
-        subscriptionsList.add(subscription);
-    }
-
-    public boolean isSubscribedTo(Subscription subscription) {
-        return subscriptionsList.contains(subscription);
-    }
-
-    public boolean belongsToThisChannel(String ADCchannel) {
-        return getSubscriptionsADChannels().contains(ADCchannel) ? true : false;
-    }
-
-    private ArrayList<String> getSubscriptionsADChannels() {
-        ArrayList<String> channels = new ArrayList<String>(0);
-        for (Subscription sub : subscriptionsList) {
-            if (!channels.contains(sub.getADChannel())) {
-                channels.add(sub.getADChannel());
+            if (sub.getChannelID().equals(msg.getSubscription().getChannelID())) {
+                return true;
             }
         }
-        return channels;
+        return false;
     }
+
 }

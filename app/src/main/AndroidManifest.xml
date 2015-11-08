@@ -12,7 +12,6 @@
         </activity>
 
         <service android:name=".services.BroadcastReceiveService" android:exported="false" />
-        <service android:name=".services.ADCService" android:exported="false" />
 
     </application>
 

@@ -4,17 +4,20 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class Message implements Serializable {
+    public static final int INFINITE_TTL = -1;
+    public static final int NO_PRIORITY_LEVEL = 0;
 
     private static int counterOfmsgID;
 
-    private String typeOfMessage;
-    private String hostID;
-    private String hostUsername;
-    private int msgID;
-    private Date creationTime;
-    private Date receptionTime;
-    private long ttl;
-    private int size;
+    protected String typeOfMessage;
+    protected String hostID;
+    protected String hostUsername;
+    protected int msgID;
+    protected Date creationTime;
+    protected Date receptionTime;
+    protected long ttl;
+    protected int priority;
+    protected int size;
 
 
     public String getTypeOfMessage() {
@@ -43,6 +46,10 @@ public class Message implements Serializable {
 
     public long getTtl() {
         return ttl;
+    }
+
+    public int getPriority() {
+        return priority;
     }
 
     public int getSize() {
@@ -78,8 +85,18 @@ public class Message implements Serializable {
         ttl = period;
     }
 
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
     public void setSize(int size) {
         this.size = size;
+    }
+
+    public boolean equals(Message msg) {
+        return (typeOfMessage.equals(msg.typeOfMessage) &&
+                hostID.equals(msg.hostID) &&
+                (msgID == msg.msgID));
     }
 
     public void resetCounterOfmsgID() {

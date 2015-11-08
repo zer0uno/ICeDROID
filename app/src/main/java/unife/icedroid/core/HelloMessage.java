@@ -3,6 +3,7 @@ package unife.icedroid.core;
 import java.util.ArrayList;
 
 public class HelloMessage extends Message {
+    public static final String HELLO_MESSAGE = "helloMessage";
 
     private ArrayList<Subscription> hostSubscriptions;
     private ArrayList<RegularMessage> cachedMessages;
