@@ -1,12 +1,17 @@
 package unife.icedroid.core.managers;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.*;
-
+import android.util.Log;
 import unife.icedroid.core.HelloMessage;
 import unife.icedroid.core.Message;
 import unife.icedroid.core.RegularMessage;
+import unife.icedroid.utils.Settings;
 
 public class MessageQueueManager {
+    private final static String TAG = "MessageQueueManager";
 
     private volatile static MessageQueueManager instance;
 
@@ -164,15 +169,15 @@ public class MessageQueueManager {
         }
     }
 
-    public Message getMessageToSend() {
+    public byte[] getMessageToSend() throws InterruptedException {
+        Message message = null;
         synchronized (forwardingMessages) {
-
-            Message message = null;
             while (message == null) {
                 while (forwardingMessages.size() == 0) {
                     try {
                         forwardingMessages.wait();
-                    } catch (Exception ex) {
+                    } catch (InterruptedException ex) {
+                        throw ex;
                     }
                 }
 
@@ -188,9 +193,20 @@ public class MessageQueueManager {
                 }
                 indexForwardingMessages++;
             }
-
-            return message;
         }
+        byte[] messageToArray = null;
+        ByteArrayOutputStream byteArrayInputStream = new ByteArrayOutputStream(Settings.MSG_SIZE);
+
+        try {
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayInputStream);
+            objectOutputStream.writeObject(message);
+            messageToArray = byteArrayInputStream.toByteArray();
+        } catch (IOException ex) {
+            String msg = ex.getMessage();
+            Log.e(TAG, (msg != null) ? msg : "Impossible to convert to byte: " + message);
+        }
+
+        return messageToArray;
     }
 
     private boolean isExpired(Message msg) {

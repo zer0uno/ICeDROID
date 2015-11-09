@@ -15,6 +15,11 @@ public class BroadcastReceiveThread implements Runnable {
     private Context context;
 
     public BroadcastReceiveThread(Context context, DatagramSocket socket) {
+        /**
+         * TODO
+         * Trovare un modo più carino nel caso ci sia un errone nella creazione della socket
+         * per esempio riprovanto più volte dopo aver chiamato una sleep e provando al max TOT volte
+         */
         this.context = context;
         this.socket = socket;
         try {
@@ -25,25 +30,29 @@ public class BroadcastReceiveThread implements Runnable {
         } catch (Exception ex) {
             String msg = ex.getMessage();
             Log.e(TAG, (msg != null)? msg : "Socket error");
+            Thread.currentThread().interrupt();
         }
     }
 
     @Override
     public void run() {
-        try {
-            Log.i(TAG, "UDP Socket is up");
-            byte[] data = null;
-            while (true) {
-                data = new byte[Settings.MSG_SIZE];
-                DatagramPacket packet = new DatagramPacket(data, data.length);
-                socket.receive(packet);
-                MessageDispatcher.deliver(context, packet);
-                Log.i(TAG, "Received: " + packet.toString());
-            }
+        if (! Thread.interrupted()) {
+            try {
+                Log.i(TAG, "UDP Socket is up");
+                DatagramPacket packet = null;
+                byte[] data = null;
+                while (true) {
+                    data = new byte[Settings.MSG_SIZE];
+                    packet = new DatagramPacket(data, data.length);
+                    socket.receive(packet);
+                    MessageDispatcher.deliver(context, packet);
+                    Log.i(TAG, "Received: " + packet.toString());
+                }
 
-        } catch (Exception ex) {
-            String msg = ex.getMessage();
-            Log.e(TAG, (msg != null)? msg : "Error in BroadcastReceiveThread");
+            } catch (Exception ex) {
+                String msg = ex.getMessage();
+                Log.e(TAG, (msg != null) ? msg : "Error in BroadcastReceiveThread");
+            }
         }
     }
 }

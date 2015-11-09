@@ -15,6 +15,11 @@ public class BroadcastReceiveService extends Service {
 
     @Override
     public void onCreate() {
+        /**
+         * TODO
+         * Trovare un modo per segnalare che è impossibile avviare il servizio di send e che quindi
+         * l'applcazione va chiusa
+         */
         try {
             socket = new DatagramSocket();
             recvThread = new Thread(new BroadcastReceiveThread(getApplicationContext(), socket));
