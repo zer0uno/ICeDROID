@@ -31,7 +31,7 @@ public class NICManager {
             //Controls to check that the interface is on ad-hoc mode and on the right essid
             cmd = "iwconfig" + Settings.NW_IF;
             ArrayList<String> results = Utils.exec(cmd);
-            if (! containsSubstring(results, "Mode:Ad-Hoc") || ! containsSubstring(results, "ESSID " + Settings.NW_ESSID)) {
+            if (!containsSubstring(results, "Mode:Ad-Hoc") || !containsSubstring(results, "ESSID " + Settings.NW_ESSID)) {
                 throw new WifiAdhocImpossibleToEnable("Impossible to enable Wifi Ad-Hoc");
             }
 

@@ -38,8 +38,8 @@ public class ApplevDisseminationChannelService extends IntentService {
         if (regularMessage != null) {
             boolean toCache = true;
 
-            if (! messageQueueManager.isCached(regularMessage) &&
-                ! messageQueueManager.isDiscarded(regularMessage)) {
+            if (!messageQueueManager.isCached(regularMessage) &&
+                !messageQueueManager.isDiscarded(regularMessage)) {
 
                 if (subscriptionListManager.isSubscribedToMessage(regularMessage)) {
                     /**
@@ -48,7 +48,7 @@ public class ApplevDisseminationChannelService extends IntentService {
                      * messaggi, il quale dovrà controllare che il messaggio non sia quello mio che
                      * ho creato prima
                     */
-                } else if (! subscriptionListManager.isSubscribedToChannel(regularMessage)) {
+                } else if (!subscriptionListManager.isSubscribedToChannel(regularMessage)) {
                     Random random = new Random(System.currentTimeMillis());
                     if (random.nextDouble() > CACHING_PROBABILITY) {
                         toCache = false;

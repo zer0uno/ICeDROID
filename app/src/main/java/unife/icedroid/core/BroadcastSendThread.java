@@ -35,7 +35,7 @@ public class BroadcastSendThread implements Runnable {
 
     @Override
     public void run() {
-        if (! Thread.interrupted()) {
+        if (!Thread.interrupted()) {
             try {
                 InetAddress broadcastAddress = InetAddress.getByName(Settings.NW_BROADCAST_ADDRESS);
                 byte[] data = null;

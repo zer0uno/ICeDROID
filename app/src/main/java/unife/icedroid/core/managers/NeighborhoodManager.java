@@ -59,7 +59,7 @@ public class NeighborhoodManager {
             //The neighbor must be subscripted to the same subscription and must not have
             //the message in its own cache
             if (neighbor.getHostSubscriptions().contains(msg.getSubscription()) &&
-                ! neighbor.getCachedMessages().contains(msg)) {
+                !neighbor.getCachedMessages().contains(msg)) {
                 return true;
             }
         }

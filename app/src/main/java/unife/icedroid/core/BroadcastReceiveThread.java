@@ -36,7 +36,7 @@ public class BroadcastReceiveThread implements Runnable {
 
     @Override
     public void run() {
-        if (! Thread.interrupted()) {
+        if (!Thread.interrupted()) {
             try {
                 Log.i(TAG, "UDP Socket is up");
                 DatagramPacket packet = null;

@@ -63,7 +63,7 @@ public class MessageQueueManager {
          * TODO
          * Aggiungere politiche di caching
         */
-        if (! isExpired(msg)) {
+        if (!isExpired(msg)) {
             synchronized (cachedMessages) {
                 cachedMessages.add(msg);
             }
@@ -83,7 +83,7 @@ public class MessageQueueManager {
     }
 
     public void addToDiscarded(final RegularMessage msg) {
-        if (! isExpired(msg)) {
+        if (!isExpired(msg)) {
 
             msg.setContentData(null);
             synchronized (discardedMessages) {

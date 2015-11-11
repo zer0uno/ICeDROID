@@ -68,7 +68,7 @@ public class NeighborInfo {
         ArrayList<String> channels = new ArrayList<>(0);
         for (Subscription sub : hostSubscriptions) {
             String channel = sub.getChannelID();
-            if (! channels.contains(channel)) {
+            if (!channels.contains(channel)) {
                 channels.add(channel);
             }
         }
