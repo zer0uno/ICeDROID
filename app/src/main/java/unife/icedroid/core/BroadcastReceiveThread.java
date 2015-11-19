@@ -22,16 +22,6 @@ public class BroadcastReceiveThread implements Runnable {
          */
         this.context = context;
         this.socket = socket;
-        try {
-            InetAddress broadcastWildcard = InetAddress.getByName("0.0.0.0");
-            InetSocketAddress addr = new InetSocketAddress(broadcastWildcard, Settings.RECV_PORT);
-            this.socket.bind(addr);
-
-        } catch (Exception ex) {
-            String msg = ex.getMessage();
-            Log.e(TAG, (msg != null)? msg : "Socket error");
-            Thread.currentThread().interrupt();
-        }
     }
 
     @Override
@@ -44,9 +34,10 @@ public class BroadcastReceiveThread implements Runnable {
                 while (true) {
                     data = new byte[Settings.MSG_SIZE];
                     packet = new DatagramPacket(data, data.length);
+                    Log.i(TAG, "Waiting for a message");
                     socket.receive(packet);
                     MessageDispatcher.deliver(context, packet);
-                    Log.i(TAG, "Received: " + packet.toString());
+                    Log.i(TAG, "Received a message");
                 }
 
             } catch (Exception ex) {

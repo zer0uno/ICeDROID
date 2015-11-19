@@ -13,9 +13,16 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".CreateChatActivity" android:label="@string/create_chat"/>
+        <activity
+            android:name=".CreateChatActivity"
+            android:label="@string/create_chat"
+            android:theme="@style/Theme.AppCompat.Dialog"/>
 
-        <service android:name=".services.BroadcastReceiveService" android:exported="false" />
+        <activity android:name=".ChatActivity"/>
+
+        <service android:name=".services.BroadcastReceiveService" android:exported="false"/>
+
+        <service android:name=".services.BroadcastSendService" android:exported="false"/>
 
     </application>
 

@@ -26,6 +26,11 @@ public class SubscriptionListManager {
         return instance;
     }
 
+    public synchronized void subscribe(String channel, String group) {
+        Subscription subscription = new Subscription(channel, group);
+        subscriptionsList.add(subscription);
+    }
+
     public synchronized boolean isSubscribedToMessage(RegularMessage msg) {
         return subscriptionsList.contains(msg.getSubscription());
     }

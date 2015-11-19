@@ -3,6 +3,7 @@ package unife.icedroid.services;
 import java.util.*;
 import android.app.IntentService;
 import android.content.Intent;
+import android.util.Log;
 import unife.icedroid.core.*;
 import unife.icedroid.core.managers.MessageQueueManager;
 import unife.icedroid.core.managers.NeighborhoodManager;
@@ -28,6 +29,8 @@ public class HelloMessageService extends IntentService{
             }
 
         }, new Date(System.currentTimeMillis()), 25*1000);
+
+        Log.i(TAG, "HelloMessageTimer ON");
     }
 
     @Override

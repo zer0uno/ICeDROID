@@ -10,7 +10,10 @@ import android.content.Intent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-
+import android.widget.Toast;
+import unife.icedroid.services.BroadcastReceiveService;
+import unife.icedroid.services.BroadcastSendService;
+import unife.icedroid.services.HelloMessageService;
 import unife.icedroid.utils.NICManager;
 
 public class ICeDROIDActivity extends AppCompatActivity {
@@ -27,19 +30,29 @@ public class ICeDROIDActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        /*wifimanager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        //Enable Wifi Ad-Hoc
+        wifimanager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wifilock = wifimanager.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY, "WifiLock");
         wifilock.acquire();
         wifimanager.setWifiEnabled(true);
-
         try {
             NICManager.startWifiAdhoc();
+            Toast.makeText(this, R.string.AdHoc_enabled, Toast.LENGTH_LONG).show();
 
         } catch(Exception ex) {
             String msg = ex.getMessage();
             Log.e(TAG, (msg!=null)? msg : "onCreate(): An error occurred");
             finish();
-        }*/
+        }
+
+        //Activation of various needed services
+        Intent intent;
+        //BroadcastReceiveService
+        intent = new Intent(this, BroadcastReceiveService.class);
+        startService(intent);
+        //BroadcastSendService
+        intent = new Intent(this, BroadcastSendService.class);
+        startService(intent);
     }
 
     @Override
@@ -90,13 +103,13 @@ public class ICeDROIDActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        /*try {
+        try {
             NICManager.stopWifiAdhoc();
             wifilock.release();
         } catch(Exception ex) {
             String msg = ex.getMessage();
             Log.e(TAG, (msg!=null)? msg : "onDestroy(): An error occurred");
         }
-        Log.i(TAG, "ICeDROIDActivity destroyed");*/
+        Log.i(TAG, "ICeDROIDActivity destroyed");
     }
 }

@@ -8,6 +8,10 @@ public class HelloMessage extends Message {
     private ArrayList<Subscription> hostSubscriptions;
     private ArrayList<RegularMessage> cachedMessages;
 
+    public HelloMessage() {
+        typeOfMessage = HELLO_MESSAGE;
+    }
+
 
     public ArrayList<Subscription> getHostSubscriptions() {
         return hostSubscriptions;

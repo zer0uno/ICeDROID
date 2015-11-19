@@ -1,6 +1,5 @@
 package unife.icedroid.core;
 
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
@@ -18,7 +17,7 @@ public class BroadcastSendThread implements Runnable {
     public BroadcastSendThread() {
         /**
          * TODO
-         * Trovare un modo più carino nel caso ci sia un errone nella creazione della socket
+         * Trovare un modo più carino nel caso ci sia un errore nella creazione della socket
          * per esempio riprovanto più volte dopo aver chiamato una sleep e provando al max TOT volte
         */
         messageQueueManager = MessageQueueManager.getMessageQueueManager();
@@ -46,6 +45,7 @@ public class BroadcastSendThread implements Runnable {
                     if (data != null) {
                         packet = new DatagramPacket(data, data.length, broadcastAddress, Settings.RECV_PORT);
                         socket.send(packet);
+                        Log.i(TAG, "Message sent: " + data);
                     }
                 }
             } catch (Exception ex) {

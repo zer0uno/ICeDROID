@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Random;
 import android.app.IntentService;
 import android.content.Intent;
+
+import unife.icedroid.ChatActivity;
 import unife.icedroid.core.Constants;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.core.managers.*;
@@ -42,6 +44,10 @@ public class ApplevDisseminationChannelService extends IntentService {
                 !messageQueueManager.isDiscarded(regularMessage)) {
 
                 if (subscriptionListManager.isSubscribedToMessage(regularMessage)) {
+                    Intent chatIntent = new Intent(this, ChatActivity.class);
+                    chatIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    chatIntent.putExtra(RegularMessage.REGULAR_MESSAGE, regularMessage);
+                    startActivity(chatIntent);
                     /**
                      * TODO
                      * inviare il messaggio al componente per la visualizzazione dei nuovi

@@ -6,8 +6,6 @@
     android:orientation="vertical"
     android:gravity="center_horizontal|center_vertical">
 
-    <include layout="@layout/toolbar"/>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -32,7 +30,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/save_chat"
             android:text="@string/save_chat"
-            style="@style/buttonStyle"/>
+            style="@style/buttonStyle"
+            android:onClick="subscribeToGroup"/>
 
     </LinearLayout>
 

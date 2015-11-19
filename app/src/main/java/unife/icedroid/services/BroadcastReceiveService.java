@@ -1,11 +1,13 @@
 package unife.icedroid.services;
 
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import android.app.Service;
 import android.os.IBinder;
 import android.content.Intent;
 import android.util.Log;
 import unife.icedroid.core.BroadcastReceiveThread;
+import unife.icedroid.utils.Settings;
 
 public class BroadcastReceiveService extends Service {
     private static final String TAG = "BroadcastReceiveService";
@@ -18,10 +20,11 @@ public class BroadcastReceiveService extends Service {
         /**
          * TODO
          * Trovare un modo per segnalare che è impossibile avviare il servizio di send e che quindi
-         * l'applcazione va chiusa
+         * l'applicazione va chiusa
          */
         try {
-            socket = new DatagramSocket();
+            InetAddress broadcastWildcard = InetAddress.getByName("0.0.0.0");
+            socket = new DatagramSocket(Settings.RECV_PORT, broadcastWildcard);
             recvThread = new Thread(new BroadcastReceiveThread(getApplicationContext(), socket));
             recvThread.start();
             Log.i(TAG, "BroadcastReceiveThread started");
@@ -44,6 +47,7 @@ public class BroadcastReceiveService extends Service {
 
     @Override
     public void onDestroy() {
+        recvThread.interrupt();
         socket.close();
         try {
             recvThread.join();

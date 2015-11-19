@@ -17,7 +17,7 @@ public class BroadcastSendService extends Service {
         /**
          * TODO
          * Trovare un modo per segnalare che è impossibile avviare il servizio di send e che quindi
-         * l'applcazione va chiusa
+         * l'applicazione va chiusa
          */
         try {
             sendThread = new Thread(new BroadcastSendThread());

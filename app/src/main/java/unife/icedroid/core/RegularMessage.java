@@ -6,6 +6,10 @@ public class RegularMessage extends Message {
     private Subscription subscription;
     private String contentData;
 
+    public RegularMessage() {
+        typeOfMessage = REGULAR_MESSAGE;
+    }
+
     public Subscription getSubscription() {
         return subscription;
     }

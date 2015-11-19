@@ -5,6 +5,11 @@ public class Subscription {
     private String channelID;
     private String groupName;
 
+    public Subscription(String channel, String group) {
+        channelID = channel;
+        groupName = group;
+    }
+
     public String getChannelID() {
         return channelID;
     }

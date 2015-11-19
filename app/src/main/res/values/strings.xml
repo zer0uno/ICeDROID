@@ -6,4 +6,7 @@
     <string name="channel_name">Nome del canale</string>
     <string name="group_name">Nome del gruppo</string>
     <string name="save_chat">Salva</string>
+    <string name="send_message">Invia</string>
+    <string name="write_msg">Scrivi un messaggio</string>
+    <string name="AdHoc_enabled">Modalità Ad-Hoc abilitata</string>
 </resources>
