@@ -1,9 +1,7 @@
 package unife.icedroid.core;
 
-import java.net.InetAddress;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
-import java.net.InetSocketAddress;
 import android.util.Log;
 import android.content.Context;
 import unife.icedroid.utils.Settings;
@@ -34,10 +32,9 @@ public class BroadcastReceiveThread implements Runnable {
                 while (true) {
                     data = new byte[Settings.MSG_SIZE];
                     packet = new DatagramPacket(data, data.length);
-                    Log.i(TAG, "Waiting for a message");
+                    //Log.i(TAG, "Waiting for a message...");
                     socket.receive(packet);
                     MessageDispatcher.deliver(context, packet);
-                    Log.i(TAG, "Received a message");
                 }
 
             } catch (Exception ex) {

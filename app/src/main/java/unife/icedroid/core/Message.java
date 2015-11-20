@@ -2,10 +2,13 @@ package unife.icedroid.core;
 
 import java.io.Serializable;
 import java.util.Date;
+import unife.icedroid.exceptions.ImpossibleToGetMacAddress;
+import unife.icedroid.utils.Settings;
 
 public class Message implements Serializable {
     public static final int INFINITE_TTL = -1;
     public static final int NO_PRIORITY_LEVEL = 0;
+    public static final int MAX_PRIORITY_LEVEL = Integer.MAX_VALUE;
 
     private static int counterOfmsgID;
 
@@ -18,6 +21,14 @@ public class Message implements Serializable {
     protected long ttl;
     protected int priority;
     protected int size;
+
+    public Message() {
+        hostID = Settings.HOST_ID;
+        setMsgID();
+        long time = System.currentTimeMillis();
+        creationTime = new Date(time);
+        receptionTime = new Date(time);
+    }
 
 
     public String getTypeOfMessage() {

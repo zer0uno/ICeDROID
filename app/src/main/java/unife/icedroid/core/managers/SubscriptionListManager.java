@@ -31,6 +31,10 @@ public class SubscriptionListManager {
         subscriptionsList.add(subscription);
     }
 
+    public synchronized ArrayList<Subscription> getSubscriptionsList() {
+        return subscriptionsList;
+    }
+
     public synchronized boolean isSubscribedToMessage(RegularMessage msg) {
         return subscriptionsList.contains(msg.getSubscription());
     }

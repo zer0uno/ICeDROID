@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.Context;
 import unife.icedroid.services.ApplevDisseminationChannelService;
 import unife.icedroid.services.HelloMessageService;
+import unife.icedroid.utils.Settings;
 
 public class MessageDispatcher {
     private static final String TAG = "MessageDispatcher";
@@ -22,19 +23,23 @@ public class MessageDispatcher {
             ObjectInputStream rawMessage = new ObjectInputStream(byteArrayInputStream);
             Message message = (Message) rawMessage.readObject();
 
-            //Set message reception time
-            message.setReceptionTime(new Date(System.currentTimeMillis()));
+            //Broadcast messages are also delivered to whom generated the message
+            if (!message.getHostID().equals(Settings.HOST_ID)) {
+                Log.i(TAG, "Received a message"+ message);
+                //Set message reception time
+                message.setReceptionTime(new Date(System.currentTimeMillis()));
 
-            Intent intent;
+                Intent intent;
 
-            if (message.getTypeOfMessage().equals("regular")) {
-                intent = new Intent(context, ApplevDisseminationChannelService.class);
-                intent.putExtra(Constants.EXTRA_ADC_MESSAGE, message);
-            } else {
-                intent = new Intent(context, HelloMessageService.class);
-                intent.putExtra(Constants.EXTRA_HELLO_MESSAGE, message);
+                if (message.getTypeOfMessage().equals("regular")) {
+                    intent = new Intent(context, ApplevDisseminationChannelService.class);
+                    intent.putExtra(Constants.EXTRA_ADC_MESSAGE, message);
+                } else {
+                    intent = new Intent(context, HelloMessageService.class);
+                    intent.putExtra(Constants.EXTRA_HELLO_MESSAGE, message);
+                }
+                context.startService(intent);
             }
-            context.startService(intent);
 
         } catch (Exception ex) {
             String msg = ex.getMessage();

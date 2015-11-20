@@ -24,6 +24,11 @@
 
         <service android:name=".services.BroadcastSendService" android:exported="false"/>
 
+        <service android:name=".services.HelloMessageService" android:exported="false"/>
+
+        <service android:name=".services.ApplevDisseminationChannelService"
+                android:exported="false"/>
+
     </application>
 
     <uses-feature android:name="android.hardware.wifi" android:required="true" />

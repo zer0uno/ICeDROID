@@ -44,9 +44,7 @@ public class ChatActivity extends AppCompatActivity {
 
     public void sendMessage(View v) {
         String msg = ((EditText) findViewById(R.id.msg)).getText().toString();
-        RegularMessage message = new RegularMessage();
-        message.setSubscription(new Subscription(channelID, groupName));
-        message.setContentData(msg);
+        RegularMessage message = new RegularMessage(new Subscription(channelID, groupName), msg);
         message.setHostID(Settings.HOST_IP);
         message.setHostUsername("antonio");
         message.setMsgID();

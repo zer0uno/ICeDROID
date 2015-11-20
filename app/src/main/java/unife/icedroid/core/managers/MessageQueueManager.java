@@ -106,13 +106,16 @@ public class MessageQueueManager {
 
     public void addToForwardingMessages(Message msg) {
         synchronized (forwardingMessages) {
-
             //Hello Messages have the highest priority.
             //There can't be two hello messages in the forwarding queue, so it must be checked
             //if there is one, if there is it must be removed and substituted.
             if (msg.getTypeOfMessage().equals(HelloMessage.HELLO_MESSAGE)) {
-                removeHelloMessageFromForwadingMessages();
-                forwardingMessages.add(indexForwardingMessages, msg);
+                removeHelloMessageFromForwardingMessages();
+                if (indexForwardingMessages >= forwardingMessages.size()) {
+                    forwardingMessages.add(0, msg);
+                } else {
+                    forwardingMessages.add(indexForwardingMessages, msg);
+                }
 
             } else {
                 /**
@@ -121,11 +124,8 @@ public class MessageQueueManager {
                 */
                 forwardingMessages.add(msg);
             }
-
             forwardingMessages.notifyAll();
-
         }
-
     }
 
     public ArrayList<RegularMessage> getCachedMessages() {
@@ -157,7 +157,7 @@ public class MessageQueueManager {
         }
     }
 
-    public void removeHelloMessageFromForwadingMessages() {
+    public void removeHelloMessageFromForwardingMessages() {
         synchronized (forwardingMessages) {
             for (int i = 0; i < forwardingMessages.size(); i++) {
                 if (forwardingMessages.get(i).getTypeOfMessage().equals(

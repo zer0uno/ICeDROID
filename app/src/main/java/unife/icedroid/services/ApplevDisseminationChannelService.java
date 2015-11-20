@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import android.app.IntentService;
 import android.content.Intent;
-
+import android.util.Log;
 import unife.icedroid.ChatActivity;
 import unife.icedroid.core.Constants;
 import unife.icedroid.core.RegularMessage;
@@ -28,6 +28,8 @@ public class ApplevDisseminationChannelService extends IntentService {
         messageQueueManager = MessageQueueManager.getMessageQueueManager();
         subscriptionListManager = SubscriptionListManager.getSubscriptionListManager();
         neighborhoodManager = NeighborhoodManager.getNeighborhoodManager();
+
+        Log.i(TAG, "ApplevDisseminationChannelService ON");
     }
 
     @Override

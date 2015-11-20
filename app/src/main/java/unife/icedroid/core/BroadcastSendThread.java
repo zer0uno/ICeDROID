@@ -41,17 +41,18 @@ public class BroadcastSendThread implements Runnable {
                 DatagramPacket packet = null;
 
                 while (true) {
+                    //Log.i(TAG, "Waiting for a message to send...");
                     data = messageQueueManager.getMessageToSend();
                     if (data != null) {
                         packet = new DatagramPacket(data, data.length, broadcastAddress, Settings.RECV_PORT);
                         socket.send(packet);
-                        Log.i(TAG, "Message sent: " + data);
+                        //Log.i(TAG, "Message sent: " + data);
                     }
                 }
             } catch (Exception ex) {
                 socket.close();
                 String msg = ex.getMessage();
-                Log.e("BroadcastReceiveThread", (msg != null) ? msg : "Closing BroadcastReceiveThread");
+                Log.e(TAG, (msg != null) ? msg : "Closing BroadcastReceiveThread");
             }
         }
     }

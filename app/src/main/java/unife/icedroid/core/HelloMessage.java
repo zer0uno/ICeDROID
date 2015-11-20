@@ -2,6 +2,9 @@ package unife.icedroid.core;
 
 import java.util.ArrayList;
 
+import unife.icedroid.core.managers.MessageQueueManager;
+import unife.icedroid.core.managers.SubscriptionListManager;
+
 public class HelloMessage extends Message {
     public static final String HELLO_MESSAGE = "helloMessage";
 
@@ -10,6 +13,11 @@ public class HelloMessage extends Message {
 
     public HelloMessage() {
         typeOfMessage = HELLO_MESSAGE;
+        ttl = INFINITE_TTL;
+        priority = MAX_PRIORITY_LEVEL;
+        hostSubscriptions = SubscriptionListManager.getSubscriptionListManager().
+                                                                            getSubscriptionsList();
+        cachedMessages = MessageQueueManager.getMessageQueueManager().getCachedMessages();
     }
 
 

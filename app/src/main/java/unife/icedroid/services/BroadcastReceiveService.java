@@ -2,6 +2,10 @@ package unife.icedroid.services;
 
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import android.app.Service;
 import android.os.IBinder;
 import android.content.Intent;

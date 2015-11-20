@@ -6,8 +6,13 @@ public class RegularMessage extends Message {
     private Subscription subscription;
     private String contentData;
 
-    public RegularMessage() {
+    public RegularMessage(Subscription sbsc, String data) {
         typeOfMessage = REGULAR_MESSAGE;
+        ttl = INFINITE_TTL;
+        priority = NO_PRIORITY_LEVEL;
+        contentData = data;
+        subscription = sbsc;
+        size = contentData.getBytes().length;
     }
 
     public Subscription getSubscription() {
