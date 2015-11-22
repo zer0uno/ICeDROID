@@ -25,4 +25,9 @@ public class Subscription implements Serializable {
                 groupName.equals(subscription.groupName));
     }
 
+    @Override
+    public String toString() {
+        return channelID + ":" + groupName;
+    }
+
 }

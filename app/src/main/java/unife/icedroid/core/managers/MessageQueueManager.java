@@ -198,6 +198,7 @@ public class MessageQueueManager {
         ByteArrayOutputStream byteArrayInputStream = new ByteArrayOutputStream(Settings.MSG_SIZE);
 
         try {
+            Log.i(TAG, message.getTypeOfMessage() + " " + message.getMsgID());
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayInputStream);
             objectOutputStream.writeObject(message);
             messageToArray = byteArrayInputStream.toByteArray();

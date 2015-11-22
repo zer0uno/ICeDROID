@@ -43,10 +43,11 @@ public class BroadcastSendThread implements Runnable {
                 while (true) {
                     //Log.i(TAG, "Waiting for a message to send...");
                     data = messageQueueManager.getMessageToSend();
+                    Thread.sleep(10000);
                     if (data != null) {
                         packet = new DatagramPacket(data, data.length, broadcastAddress, Settings.RECV_PORT);
                         socket.send(packet);
-                        //Log.i(TAG, "Message sent: " + data);
+                        Log.i(TAG, "Message sent: " + data);
                     }
                 }
             } catch (Exception ex) {

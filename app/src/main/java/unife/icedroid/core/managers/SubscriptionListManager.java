@@ -1,34 +1,72 @@
 package unife.icedroid.core.managers;
 
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import android.content.Context;
+import android.util.Log;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.core.Subscription;
 
 public class SubscriptionListManager {
-
+    private static final String TAG = "SubscriptionListManager";
+    private static final String subscriptionsFileName = "subscriptions";
     private volatile static SubscriptionListManager instance = null;
 
     private ArrayList<Subscription> subscriptionsList;
+    private Context context;
 
 
-    private SubscriptionListManager() {
-        subscriptionsList = new ArrayList<Subscription>(0);
+    private SubscriptionListManager(Context context) {
+        this.context = context.getApplicationContext();
+        subscriptionsList = new ArrayList<>(0);
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(
+                                               context.openFileInput(subscriptionsFileName)));
+
+            Subscription subscription;
+            String subscriptionLine;
+            while ((subscriptionLine = br.readLine()) != null) {
+                String[] channelAndGroup = subscriptionLine.split(":");
+                subscription = new Subscription(channelAndGroup[0], channelAndGroup[1]);
+                subscriptionsList.add(subscription);
+            }
+        } catch (Exception ex) {
+            String msg = ex.getMessage();
+            Log.e(TAG, (msg != null) ? msg : "Error loading subscriptions list");
+        }
     }
 
-    public static SubscriptionListManager getSubscriptionListManager() {
+    public static SubscriptionListManager getSubscriptionListManager(Context context) {
         if (instance == null) {
             synchronized (SubscriptionListManager.class) {
                 if (instance == null) {
-                    instance = new SubscriptionListManager();
+                    instance = new SubscriptionListManager(context);
                 }
             }
         }
         return instance;
     }
 
-    public synchronized void subscribe(String channel, String group) {
-        Subscription subscription = new Subscription(channel, group);
+    public static SubscriptionListManager getSubscriptionListManager() {
+        return instance;
+    }
+
+    public synchronized void subscribe(Subscription subscription) {
         subscriptionsList.add(subscription);
+        try {
+            FileOutputStream fos = context.openFileOutput(subscriptionsFileName,
+                                                    Context.MODE_PRIVATE | Context.MODE_APPEND);
+            fos.write((subscription.toString() + "\n").getBytes());
+            fos.close();
+            fos = context.openFileOutput(subscription.toString(), Context.MODE_PRIVATE);
+            fos.close();
+            Log.i(TAG, "Subscribing to: " + subscription.toString());
+        } catch (Exception ex) {
+            String msg = ex.getMessage();
+            Log.e(TAG, (msg != null) ? msg : "Error subscribing");
+        }
     }
 
     public synchronized ArrayList<Subscription> getSubscriptionsList() {
@@ -36,7 +74,12 @@ public class SubscriptionListManager {
     }
 
     public synchronized boolean isSubscribedToMessage(RegularMessage msg) {
-        return subscriptionsList.contains(msg.getSubscription());
+        for (Subscription s : subscriptionsList) {
+            if (s.equals(msg.getSubscription())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public synchronized boolean isSubscribedToChannel(RegularMessage msg) {

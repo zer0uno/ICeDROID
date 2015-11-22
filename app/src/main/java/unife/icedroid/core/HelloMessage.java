@@ -12,6 +12,7 @@ public class HelloMessage extends Message {
     private ArrayList<RegularMessage> cachedMessages;
 
     public HelloMessage() {
+        super();
         typeOfMessage = HELLO_MESSAGE;
         ttl = INFINITE_TTL;
         priority = MAX_PRIORITY_LEVEL;

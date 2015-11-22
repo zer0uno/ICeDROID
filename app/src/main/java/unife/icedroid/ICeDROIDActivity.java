@@ -12,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import unife.icedroid.core.managers.SubscriptionListManager;
 import unife.icedroid.services.ApplevDisseminationChannelService;
 import unife.icedroid.services.BroadcastReceiveService;
 import unife.icedroid.services.BroadcastSendService;
@@ -28,8 +29,8 @@ public class ICeDROIDActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.icedroid_activity);
 
+        setContentView(R.layout.icedroid_activity);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -43,6 +44,8 @@ public class ICeDROIDActivity extends AppCompatActivity {
             NICManager.startWifiAdhoc();
             Toast.makeText(this, R.string.AdHoc_enabled, Toast.LENGTH_LONG).show();
 
+            SubscriptionListManager.getSubscriptionListManager(this);
+
             //Activation of various needed services
             Intent intent;
             //BroadcastReceiveService
@@ -52,8 +55,8 @@ public class ICeDROIDActivity extends AppCompatActivity {
             intent = new Intent(this, BroadcastSendService.class);
             startService(intent);
             //HelloMessageService
-            //intent = new Intent(this, HelloMessageService.class);
-            //startService(intent);
+            intent = new Intent(this, HelloMessageService.class);
+            startService(intent);
             //ApplevDisseminationChannelService
             intent = new Intent(this, ApplevDisseminationChannelService.class);
             startService(intent);
@@ -113,25 +116,6 @@ public class ICeDROIDActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        try {
-            NICManager.stopWifiAdhoc();
-            wifilock.release();
-
-            //Destruction of all needed services
-            Intent intent;
-            //BroadcastReceiveService
-            intent = new Intent(this, BroadcastReceiveService.class);
-            stopService(intent);
-            //BroadcastSendService
-            intent = new Intent(this, BroadcastSendService.class);
-            stopService(intent);
-            //HelloMessageService
-            intent = new Intent(this, HelloMessageService.class);
-            stopService(intent);
-        } catch(Exception ex) {
-            String msg = ex.getMessage();
-            Log.e(TAG, (msg!=null)? msg : "onDestroy(): An error occurred");
-        }
         Log.i(TAG, "ICeDROIDActivity destroyed");
     }
 }

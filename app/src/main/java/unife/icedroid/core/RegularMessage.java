@@ -7,6 +7,7 @@ public class RegularMessage extends Message {
     private String contentData;
 
     public RegularMessage(Subscription sbsc, String data) {
+        super();
         typeOfMessage = REGULAR_MESSAGE;
         ttl = INFINITE_TTL;
         priority = NO_PRIORITY_LEVEL;

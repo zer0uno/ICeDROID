@@ -1,5 +1,6 @@
 package unife.icedroid.services;
 
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Random;
 import android.app.IntentService;
@@ -46,10 +47,21 @@ public class ApplevDisseminationChannelService extends IntentService {
                 !messageQueueManager.isDiscarded(regularMessage)) {
 
                 if (subscriptionListManager.isSubscribedToMessage(regularMessage)) {
-                    Intent chatIntent = new Intent(this, ChatActivity.class);
-                    chatIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    chatIntent.putExtra(RegularMessage.REGULAR_MESSAGE, regularMessage);
-                    startActivity(chatIntent);
+                    try {
+                        FileOutputStream fos = openFileOutput(
+                          regularMessage.getSubscription().toString(), MODE_PRIVATE | MODE_APPEND);
+                        String receptionTime = "[" +
+                                regularMessage.getReceptionTime().toString() + "]";
+                        String sender = regularMessage.getHostID();
+                        String msg = regularMessage.getContentData();
+                        String data = receptionTime + " " + sender + ": " + msg + "\n";
+                        fos.write(data.getBytes());
+                        fos.close();
+                        Log.i(TAG,  "Message: " + data + " saved");
+                    } catch (Exception ex) {
+                        String msg = ex.getMessage();
+                        Log.e(TAG, (msg != null) ? msg : "Impossible to save the message");
+                    }
                     /**
                      * TODO
                      * inviare il messaggio al componente per la visualizzazione dei nuovi
