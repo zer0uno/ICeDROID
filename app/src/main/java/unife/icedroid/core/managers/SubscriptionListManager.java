@@ -56,18 +56,20 @@ public class SubscriptionListManager {
     }
 
     public synchronized void subscribe(Subscription subscription) {
-        subscriptionsList.add(subscription);
-        try {
-            FileOutputStream fos = context.openFileOutput(subscriptionsFileName,
-                                                    Context.MODE_PRIVATE | Context.MODE_APPEND);
-            fos.write((subscription.toString() + "\n").getBytes());
-            fos.close();
-            fos = context.openFileOutput(subscription.toString(), Context.MODE_PRIVATE);
-            fos.close();
-            if (DEBUG) Log.i(TAG, "Subscribing to: " + subscription.toString());
-        } catch (Exception ex) {
-            String msg = ex.getMessage();
-            if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error subscribing");
+        if (!subscriptionsList.contains(subscription)) {
+            subscriptionsList.add(subscription);
+            try {
+                FileOutputStream fos = context.openFileOutput(subscriptionsFileName,
+                        Context.MODE_PRIVATE | Context.MODE_APPEND);
+                fos.write((subscription.toString() + "\n").getBytes());
+                fos.close();
+                fos = context.openFileOutput(subscription.toString(), Context.MODE_PRIVATE);
+                fos.close();
+                if (DEBUG) Log.i(TAG, "Subscribing to: " + subscription.toString());
+            } catch (Exception ex) {
+                String msg = ex.getMessage();
+                if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error subscribing");
+            }
         }
     }
 

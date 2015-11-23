@@ -28,7 +28,7 @@ public class CreateChatActivity extends AppCompatActivity {
         SubscriptionListManager.getSubscriptionListManager().subscribe(subscription);
 
         Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra(Constants.EXTRA_SUBSCRIPTION, subscription);
+        intent.putExtra(Subscription.EXTRA_SUBSCRIPTION, subscription);
         startActivity(intent);
     }
 }

@@ -106,7 +106,20 @@ public class Settings {
         wifiLock.acquire();
         wifiManager.setWifiEnabled(true);
 
+        //Waiting for wifi to be ready
+        while (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING) {
+            Thread.sleep(1000);
+        }
+        wifiManager.startScan();
+
+        /**
+         *  TODO
+         *  Trovare un modo per evitare di dover aspettare che il wifi si attivi, vedere anche con
+         *  attempts di 10, attenzione però al fatto "link già esistente"
+        */
+
         NICManager.startWifiAdhoc(this);
+
         //UI changes must run on the UI main thread
         Handler UIhandler = new Handler(context.getMainLooper());
         UIhandler.post(new Runnable() {

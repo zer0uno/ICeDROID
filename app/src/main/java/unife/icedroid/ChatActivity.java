@@ -19,7 +19,8 @@ import android.os.FileObserver;
 import android.util.Log;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.core.Subscription;
-import unife.icedroid.services.ApplevDisseminationChannelService;
+import unife.icedroid.core.managers.ChatsManager;
+import unife.icedroid.services.RoutingService;
 import unife.icedroid.utils.Settings;
 
 public class ChatActivity extends AppCompatActivity
@@ -43,7 +44,8 @@ public class ChatActivity extends AppCompatActivity
         else {
 
             Intent intent = getIntent();
-            subscription = (Subscription) intent.getSerializableExtra(Constants.EXTRA_SUBSCRIPTION);
+            subscription =
+                        (Subscription) intent.getSerializableExtra(Subscription.EXTRA_SUBSCRIPTION);
 
             Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
             toolbar.setTitle(subscription.toString());
@@ -51,7 +53,8 @@ public class ChatActivity extends AppCompatActivity
 
             getSupportLoaderManager().initLoader(0, null, this);
 
-            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>(0));
+            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
+                                                                        new ArrayList<String>(0));
             listView = (ListView) findViewById(R.id.messages_list);
             listView.setAdapter(adapter);
         }
@@ -60,12 +63,11 @@ public class ChatActivity extends AppCompatActivity
     public void sendMessage(View v) {
         EditText editText = (EditText) findViewById(R.id.msg);
         String txt = editText.getText().toString();
-        editText.setText(null);
-        RegularMessage regularMessage = new RegularMessage(subscription, txt);
-
-        Intent intent = new Intent(this, ApplevDisseminationChannelService.class);
-        intent.putExtra(unife.icedroid.core.Constants.EXTRA_ADC_MESSAGE, regularMessage);
-        startService(intent);
+        if (!txt.equals("")) {
+            editText.setText(null);
+            RegularMessage message = new RegularMessage(subscription, txt);
+            ChatsManager.saveMessageInConversation(getFilesDir().getAbsolutePath(), message);
+        }
     }
 
     public Loader<ArrayList<String>> onCreateLoader(int id, Bundle args) {

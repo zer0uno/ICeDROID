@@ -1,9 +1,9 @@
 package unife.icedroid.core;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 public class Subscription implements Serializable {
+    public final static String EXTRA_SUBSCRIPTION = "unife.icedroid.SUBSCRIPTION";
 
     private String channelID;
     private String groupName;

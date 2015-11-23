@@ -8,7 +8,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class NeighborhoodManager {
-
     private volatile static NeighborhoodManager instance;
     private static long ttlOfNeighbor = 35*1000;
 

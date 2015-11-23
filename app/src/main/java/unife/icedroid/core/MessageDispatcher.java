@@ -35,10 +35,11 @@ public class MessageDispatcher {
                     Intent intent;
                     if (message.getTypeOfMessage().equals("regular")) {
                         intent = new Intent(context, ApplevDisseminationChannelService.class);
-                        intent.putExtra(Constants.EXTRA_ADC_MESSAGE, message);
+                        intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
+                                        message);
                     } else {
                         intent = new Intent(context, HelloMessageService.class);
-                        intent.putExtra(Constants.EXTRA_HELLO_MESSAGE, message);
+                        intent.putExtra(HelloMessage.EXTRA_HELLO_MESSAGE, message);
                     }
                     context.startService(intent);
                 }

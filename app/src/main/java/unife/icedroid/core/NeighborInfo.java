@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class NeighborInfo {
+    public static final String EXTRA_NEW_NEIGHBOR = "unife.icedroid.NEW_NEIGHBOR";
 
     private String hostID;
     private String hostUsername;
@@ -74,7 +75,8 @@ public class NeighborInfo {
         return channels;
     }
 
-    public boolean equals(NeighborInfo nb) {
+    public boolean equals(Object object) {
+        NeighborInfo nb = (NeighborInfo) object;
         return hostID == nb.hostID;
     }
 

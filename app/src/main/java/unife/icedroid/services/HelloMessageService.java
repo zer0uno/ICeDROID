@@ -31,8 +31,8 @@ public class HelloMessageService extends Service {
         @Override
         public void handleMessage(android.os.Message msg) {
             Intent intent = (Intent) msg.obj;
-            HelloMessage helloMessage = (HelloMessage) intent.getSerializableExtra(Constants.
-                    EXTRA_HELLO_MESSAGE);
+            HelloMessage helloMessage =
+                    (HelloMessage) intent.getSerializableExtra(HelloMessage.EXTRA_HELLO_MESSAGE);
 
             if (helloMessage != null) {
                 String hostID = helloMessage.getHostID();
@@ -48,7 +48,7 @@ public class HelloMessageService extends Service {
                 if (newNeighbor) {
                     intent = new Intent(HelloMessageService.this,
                                         ApplevDisseminationChannelService.class);
-                    intent.putExtra(Constants.EXTRA_NEW_NEIGHBOR, true);
+                    intent.putExtra(NeighborInfo.EXTRA_NEW_NEIGHBOR, true);
                     startService(intent);
                 }
             }

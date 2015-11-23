@@ -2,6 +2,7 @@ package unife.icedroid.core;
 
 public class RegularMessage extends Message {
     public static final String REGULAR_MESSAGE = "regularMessage";
+    public final static String EXTRA_REGULAR_MESSAGE = "unife.icedroid.REGULAR_MESSAGE";
 
     private Subscription subscription;
     private String contentData;

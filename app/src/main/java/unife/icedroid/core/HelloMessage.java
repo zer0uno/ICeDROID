@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public class HelloMessage extends Message {
     public static final String HELLO_MESSAGE = "helloMessage";
+    public static final String EXTRA_HELLO_MESSAGE = "unife.icedroid.HELLO_MESSAGE";
 
     private ArrayList<Subscription> hostSubscriptions;
     private ArrayList<RegularMessage> cachedMessages;
