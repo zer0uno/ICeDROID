@@ -1,97 +1,261 @@
 package unife.icedroid.utils;
 
-import java.net.NetworkInterface;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Random;
+import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.util.Log;
+import android.content.Context;
+import android.content.res.Resources;
+import android.content.Intent;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
+import android.widget.Toast;
+import unife.icedroid.R;
+import unife.icedroid.core.managers.SubscriptionListManager;
 import unife.icedroid.exceptions.ImpossibleToGetIPAddress;
-import unife.icedroid.exceptions.ImpossibleToGetMacAddress;
+import unife.icedroid.services.BroadcastReceiveService;
+import unife.icedroid.services.BroadcastSendService;
+import unife.icedroid.services.HelloMessageService;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Random;
+import java.io.BufferedReader;
 
 public class Settings {
-    //Network Inferface
-    public static String NW_IF = "wlan0"; //chiamerà un metodo per trovare wlan0
-    //Network Channel
-    public static String NW_CHANNEL = "1"; //semmai permetterò all'utente di scegliere il canale
-    //Network ESSID
-    public static final String NW_ESSID = "ICEDROID_NETWORK";
-    //Host IDentifier
-    public static String HOST_ID;
-    //Local IP address
-    public static String HOST_IP = null;
-    //Network Mask
-    public static final String NW_MASK = "/16";
-    //Network Broadcast Address
-    public static final String NW_BROADCAST_ADDRESS = "192.168.255.255";
-    //UDP Receive Port
-    public static final int RECV_PORT = 49152;
-    //Message size
-    public static final int MSG_SIZE = 2048;
+    private static final String TAG = "Settings";
+    private static final boolean DEBUG = true;
 
+    private volatile static Settings instance;
 
-    public static String getIPAddress() throws ImpossibleToGetIPAddress {
-        Random randGen = new Random(System.currentTimeMillis());
-        ArrayList<String> results = null;
-        int numOfPacks = 2;
-        String address = null;
-        int addrC;
-        int addrD;
-        String cmd = null;
-        boolean found = false;
+    private String networkInterface;
+    private String networkESSID;
+    private String networkChannel;
+    private String hostID;
+    private String hostIP;
+    private String networkMask;
+    private String networkBroadcastAddress;
+    private int receivePort;
+    private int messageSize;
 
-        try {
-            while (!found) {
-                addrC = randGen.nextInt(254) + 1;
-                addrD = randGen.nextInt(254) + 1;
-                address = "192.168." + addrC + "." + addrD;
-                cmd = "arping -I " + NW_IF + " -D -c " + numOfPacks + " " + address;
+    private Context context;
+    private WifiManager wifiManager;
+    private WifiManager.WifiLock wifiLock;
 
-                results = Utils.rootExec(cmd);
-                if (results.remove(results.size() - 1).contains("Received 0 reply")) {
-                    found = true;
-                }
-            }
-        } catch (Exception ex) {
-            String msg = ex.getMessage();
-            Log.e("getIPAddress()", (msg != null)? msg : "Impossible to get and address");
-            throw new ImpossibleToGetIPAddress("Impossible to get and address");
-        }
+    private Settings(Context context) throws Exception {
+        this.context = context;
+        Resources resources = context.getResources();
+        BufferedReader br = new BufferedReader(new InputStreamReader(
+                resources.openRawResource(R.raw.settings)));
+        String[] setting;
+        String line;
 
-        Log.i("IP address set", address);
-        HOST_IP = address;
-        return address;
-    }
-
-    public static void setHostId(String id) {
-        HOST_ID = id;
-    }
-
-    /**
-     * UNUSED
-    */
-    public static String getMacAddress() throws ImpossibleToGetMacAddress {
-        try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-
-            for (NetworkInterface interf; interfaces.hasMoreElements();) {
-                interf = interfaces.nextElement();
-                if (interf.getName().equals(NW_IF)) {
-                    String mac = "";
-                    for (int i = 0; i < 6; i++) {
-                        mac += Integer.toHexString(interf.getHardwareAddress()[i]);
-                        if (i < 5) {
-                            mac += ":";
-                        }
+        while ((line = br.readLine()) != null) {
+            setting = line.split(" ");
+            switch (setting[0]) {
+                case "NetworkInterface":
+                    networkInterface = setting[2];
+                case "ESSID":
+                    networkESSID = setting[2];
+                case "NetworkChannel":
+                    networkChannel = setting[2];
+                case "HostID":
+                    if (!setting[2].equals("null")) {
+                        hostID = setting[2];
+                    } else {
+                        hostID = null;
                     }
-                    return mac;
-                }
-
+                case "HostIP":
+                    if (!setting[2].equals("null")) {
+                        hostIP = setting[2];
+                    } else {
+                        hostIP = null;
+                    }
+                case "NetworkMask":
+                    networkMask = "/" + setting[2];
+                case "BroadcastAddress":
+                    networkBroadcastAddress = setting[2];
+                case "ReceivePort":
+                    receivePort = Integer.parseInt(setting[2]);
+                case "MsgSize":
+                    messageSize = Integer.parseInt(setting[2]);
             }
+        }
+    }
+
+    private void enableWifiAdhoc() throws Exception {
+        /**************************/
+        /** Enabling wifi ad-hoc **/
+        /**************************/
+        wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        if (hostID == null) hostID = wifiManager.getConnectionInfo().getMacAddress();
+        wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY, "WifiLock");
+        wifiLock.acquire();
+        wifiManager.setWifiEnabled(true);
+
+        NICManager.startWifiAdhoc(this);
+        //UI changes must run on the UI main thread
+        Handler UIhandler = new Handler(context.getMainLooper());
+        UIhandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, R.string.AdHoc_enabled, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void startServices() throws Exception {
+        /**************************************/
+        /** Setting up subscriptions Manager **/
+        /**************************************/
+        SubscriptionListManager.getSubscriptionListManager(context);
+
+        /*******************************************/
+        /** Starting various services for the app **/
+        /*******************************************/
+        Intent intent;
+        //BroadcastReceiveService
+        intent = new Intent(context, BroadcastReceiveService.class);
+        context.startService(intent);
+        if (!isServiceRunning(BroadcastReceiveService.class)) {
+            throw new Exception("BroadcastReceiveServiceNotRunning");
+        }
+        //BroadcastSendService
+        intent = new Intent(context, BroadcastSendService.class);
+        context.startService(intent);
+        if (!isServiceRunning(BroadcastSendService.class)) {
+            throw new Exception("BroadcastSendServiceNotRunning");
+        }
+        //HelloMessageService
+        intent = new Intent(context, HelloMessageService.class);
+        context.startService(intent);
+        if (!isServiceRunning(HelloMessageService.class)) {
+            throw new Exception("HelloMessageServiceNotRunning");
+        }
+    }
+
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager)
+                                            context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static Settings getSettings(Context context) {
+        if (instance == null) {
+            synchronized (Settings.class) {
+                if (instance == null) {
+                    try {
+                        instance = new Settings(context);
+                        instance.enableWifiAdhoc();
+                        instance.startServices();
+                    } catch (Exception ex) {
+                        String msg = ex.getMessage();
+                        if (DEBUG) Log.e(TAG, "Error loading settings!");
+                        if (instance != null) instance.close();
+                    } finally {
+                        instance = null;
+                    }
+                }
+            }
+        }
+        return instance;
+    }
+
+    public static Settings getSettings() {
+        return instance;
+    }
+
+    public String getNetworkInterface() {
+        return networkInterface;
+    }
+
+    public String getNetworkESSID() {
+        return networkESSID;
+    }
+
+    public String getNetworkChannel() {
+        return networkChannel;
+    }
+
+    public String getHostID() {
+        return hostID;
+    }
+
+    public String getHostIP() throws ImpossibleToGetIPAddress {
+        if (hostIP == null) {
+            Random randGen = new Random(System.currentTimeMillis());
+            ArrayList<String> results = null;
+            int numOfPacks = 2;
+            String address = null;
+            int addrC;
+            int addrD;
+            String cmd = null;
+            boolean found = false;
+
+            try {
+                while (!found) {
+                    addrC = randGen.nextInt(254) + 1;
+                    addrD = randGen.nextInt(254) + 1;
+                    address = "192.168." + addrC + "." + addrD;
+                    cmd = "arping -I " + networkInterface + " -D -c " + numOfPacks + " " + address;
+
+                    results = Utils.rootExec(cmd);
+                    if (results.remove(results.size() - 1).contains("Received 0 reply")) {
+                        found = true;
+                    }
+                }
+            } catch (Exception ex) {
+                String msg = ex.getMessage();
+                if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Impossible to get and address");
+                throw new ImpossibleToGetIPAddress("Impossible to get and address");
+            }
+
+            if (DEBUG) Log.i(TAG, "Ip address set: " + address);
+            hostIP = address;
+        }
+        return hostIP;
+    }
+
+    public String getNetworkMask() {
+        return networkMask;
+    }
+
+    public String getNetworkBroadcastAddress() {
+        return networkBroadcastAddress;
+    }
+
+    public int getReceivePort() {
+        return receivePort;
+    }
+
+    public int getMessageSize() {
+        return messageSize;
+    }
+
+    public void close() {
+        try {
+            wifiLock.release();
+            wifiManager.setWifiEnabled(false);
+
+            NICManager.stopWifiAdhoc(this);
+
+            Intent intent;
+            //BroadcastReceiveService
+            intent = new Intent(context, BroadcastReceiveService.class);
+            context.stopService(intent);
+            //BroadcastSendService
+            intent = new Intent(context, BroadcastSendService.class);
+            context.stopService(intent);
+            //HelloMessageService
+            intent = new Intent(context, HelloMessageService.class);
+            context.stopService(intent);
+
         } catch (Exception ex) {
             String msg = ex.getMessage();
-            Log.e("getMacAddress", (msg != null) ? msg : "Impossible to get MAC address");
-            throw new ImpossibleToGetMacAddress("Impossible to get MAC address");
+            if (DEBUG) Log.e(TAG, (msg != null) ? msg : "close(): Closing error!");
         }
-        return null;
     }
 }

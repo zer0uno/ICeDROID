@@ -5,27 +5,24 @@ import android.os.IBinder;
 import android.content.Intent;
 import android.util.Log;
 import unife.icedroid.core.BroadcastSendThread;
+import unife.icedroid.utils.Settings;
 
 public class BroadcastSendService extends Service {
     private static final String TAG = "BroadcastSendService";
+    private static final boolean DEBUG = true;
 
     private Thread sendThread;
 
 
     @Override
     public void onCreate() {
-        /**
-         * TODO
-         * Trovare un modo per segnalare che è impossibile avviare il servizio di send e che quindi
-         * l'applicazione va chiusa
-         */
         try {
-            sendThread = new Thread(new BroadcastSendThread());
+            sendThread = new Thread(new BroadcastSendThread(Settings.getSettings()));
             sendThread.start();
-            Log.i(TAG, "BroadcastSendThread started");
+            if (DEBUG) Log.i(TAG, "BroadcastSendThread started");
         } catch (Exception ex) {
             String msg = ex.getMessage();
-            Log.e(TAG, (msg != null) ? msg : "onCreate(): An error occurred");
+            if (DEBUG) Log.e(TAG, (msg != null) ? msg : "onCreate(): An error occurred");
             stopSelf();
         }
     }
@@ -43,6 +40,6 @@ public class BroadcastSendService extends Service {
     @Override
     public void onDestroy() {
         sendThread.interrupt();
-        Log.i(TAG, "BroadcastSendService destroyed");
+        if (DEBUG) Log.i(TAG, "BroadcastSendService destroyed");
     }
 }

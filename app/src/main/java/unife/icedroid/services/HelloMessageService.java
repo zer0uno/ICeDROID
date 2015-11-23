@@ -1,6 +1,5 @@
 package unife.icedroid.services;
 
-import java.util.*;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -12,9 +11,11 @@ import android.os.Process;
 import unife.icedroid.core.*;
 import unife.icedroid.core.managers.MessageQueueManager;
 import unife.icedroid.core.managers.NeighborhoodManager;
+import java.util.*;
 
 public class HelloMessageService extends Service {
     private static final String TAG = "HelloMessageService";
+    private static final boolean DEBUG = true;
 
     private MessageQueueManager messageQueueManager;
     private Timer helloMessageTimer;
@@ -51,12 +52,6 @@ public class HelloMessageService extends Service {
                     startService(intent);
                 }
             }
-            /**
-             * TODO
-             * Bisogna anche capire se smettere di trasmettere quando si è capito
-             * che tutti i vicini hanno ricevuto il messaggio e quindi se è necessario
-             * che l'aggiunta di un hellomessage scateni un controllo sulla tabella delle decisioni
-             */
         }
     }
 
@@ -77,7 +72,7 @@ public class HelloMessageService extends Service {
 
         }, new Date(System.currentTimeMillis()), 15*1000);
 
-        Log.i(TAG, "HelloMessageTimer ON");
+        if (DEBUG) Log.i(TAG, "HelloMessageTimer ON");
 
         thread = new HandlerThread("HelloMessageServiceThread", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
@@ -102,7 +97,7 @@ public class HelloMessageService extends Service {
     @Override
     public void onDestroy() {
         thread.interrupt();
-        Log.i(TAG, "Service destroyed");
+        if (DEBUG) Log.i(TAG, "Service destroyed");
         helloMessageTimer.cancel();
         super.onDestroy();
     }

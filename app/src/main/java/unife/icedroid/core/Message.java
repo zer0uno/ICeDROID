@@ -1,9 +1,8 @@
 package unife.icedroid.core;
 
+import unife.icedroid.utils.Settings;
 import java.io.Serializable;
 import java.util.Date;
-import unife.icedroid.exceptions.ImpossibleToGetMacAddress;
-import unife.icedroid.utils.Settings;
 
 public class Message implements Serializable {
     public static final int INFINITE_TTL = -1;
@@ -23,7 +22,7 @@ public class Message implements Serializable {
     protected int size;
 
     public Message() {
-        hostID = Settings.HOST_ID;
+        hostID = Settings.getSettings().getHostID();
         setMsgID();
         long time = System.currentTimeMillis();
         creationTime = new Date(time);

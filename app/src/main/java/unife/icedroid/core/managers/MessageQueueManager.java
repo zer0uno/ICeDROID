@@ -1,17 +1,18 @@
 package unife.icedroid.core.managers;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.*;
 import android.util.Log;
 import unife.icedroid.core.HelloMessage;
 import unife.icedroid.core.Message;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.utils.Settings;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.*;
 
 public class MessageQueueManager {
-    private final static String TAG = "MessageQueueManager";
+    private static final String TAG = "MessageQueueManager";
+    private static final boolean DEBUG = true;
 
     private volatile static MessageQueueManager instance;
 
@@ -170,6 +171,7 @@ public class MessageQueueManager {
     }
 
     public byte[] getMessageToSend() throws InterruptedException {
+        Settings s = Settings.getSettings();
         Message message = null;
         synchronized (forwardingMessages) {
             while (message == null) {
@@ -195,16 +197,16 @@ public class MessageQueueManager {
             }
         }
         byte[] messageToArray = null;
-        ByteArrayOutputStream byteArrayInputStream = new ByteArrayOutputStream(Settings.MSG_SIZE);
+        ByteArrayOutputStream byteArrayInputStream = new ByteArrayOutputStream(s.getMessageSize());
 
         try {
-            Log.i(TAG, message.getTypeOfMessage() + " " + message.getMsgID());
+            if (DEBUG) Log.i(TAG, message.getTypeOfMessage() + " " + message.getMsgID());
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayInputStream);
             objectOutputStream.writeObject(message);
             messageToArray = byteArrayInputStream.toByteArray();
         } catch (IOException ex) {
             String msg = ex.getMessage();
-            Log.e(TAG, (msg != null) ? msg : "Impossible to convert to byte: " + message);
+            if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Impossible to convert to byte: " + message);
         }
 
         return messageToArray;

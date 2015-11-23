@@ -1,9 +1,8 @@
 package unife.icedroid.core;
 
-import java.util.ArrayList;
-
 import unife.icedroid.core.managers.MessageQueueManager;
 import unife.icedroid.core.managers.SubscriptionListManager;
+import java.util.ArrayList;
 
 public class HelloMessage extends Message {
     public static final String HELLO_MESSAGE = "helloMessage";

@@ -7,6 +7,7 @@ import android.widget.EditText;
 import android.content.Intent;
 import unife.icedroid.core.Subscription;
 import unife.icedroid.core.managers.SubscriptionListManager;
+import unife.icedroid.utils.Settings;
 
 public class CreateChatActivity extends AppCompatActivity {
     private final static String TAG = "CreateChatActivity";
@@ -15,6 +16,9 @@ public class CreateChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.create_chat_activity);
+
+        Settings s = Settings.getSettings(this);
+        if (s == null) finish();
     }
 
     public void subscribeToGroup(View v) {

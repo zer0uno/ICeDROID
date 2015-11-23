@@ -1,13 +1,15 @@
 package unife.icedroid.utils;
 
+import android.util.Log;
+import unife.icedroid.exceptions.CommandImpossibleToRun;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import android.util.Log;
-import unife.icedroid.exceptions.CommandImpossibleToRun;
 
 public class Utils {
+    private final static String TAG = "Utils";
+    private final static boolean DEBUG = true;
 
     public static ArrayList<String> rootExec(String command) throws CommandImpossibleToRun {
         Process interactiveShell = null;
@@ -48,11 +50,12 @@ public class Utils {
 
         } catch (Exception ex) {
             String msg = ex.getMessage();
-            Log.e("rootExec()", (msg != null)? msg : "Impossible to run the command");
+            if (DEBUG) Log.e(TAG, (msg != null)? msg :
+                    "rootExec() - impossible to run the command: " + command);
             throw new CommandImpossibleToRun("Impossible to run the command");
         }
 
-        Log.i("rootExec()", "Command executed: " + command);
+        if (DEBUG) Log.i(TAG, "rootExec() - Command executed: " + command);
         return results;
     }
 
@@ -81,11 +84,12 @@ public class Utils {
 
         } catch (Exception ex) {
             String msg = ex.getMessage();
-            Log.e("exec()", (msg != null)? msg : "Impossible to run the command");
+            if (DEBUG) Log.e(TAG, (msg != null)? msg :
+                    "exec() - Impossible to run the command: " + command);
             throw new CommandImpossibleToRun("Impossible to run the command");
         }
 
-        Log.i("exec()", "Command executed: " + command);
+        if (DEBUG) Log.i(TAG, "exec() - Command executed: " + command);
         return results;
     }
 }

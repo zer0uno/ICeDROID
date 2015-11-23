@@ -1,11 +1,8 @@
 package unife.icedroid;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Date;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.content.Context;
@@ -25,8 +22,11 @@ import unife.icedroid.core.Subscription;
 import unife.icedroid.services.ApplevDisseminationChannelService;
 import unife.icedroid.utils.Settings;
 
-public class ChatActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<ArrayList<String>> {
-    private final static String TAG = "ChatActivity";
+public class ChatActivity extends AppCompatActivity
+                        implements LoaderManager.LoaderCallbacks<ArrayList<String>> {
+    private static final String TAG = "ChatActivity";
+    private static final boolean DEBUG = true;
+
 
     private Subscription subscription;
 
@@ -38,18 +38,23 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.chat);
 
-        Intent intent = getIntent();
-        subscription = (Subscription) intent.getSerializableExtra(Constants.EXTRA_SUBSCRIPTION);
+        Settings s = Settings.getSettings(this);
+        if (s == null) finish();
+        else {
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(subscription.toString());
-        setSupportActionBar(toolbar);
+            Intent intent = getIntent();
+            subscription = (Subscription) intent.getSerializableExtra(Constants.EXTRA_SUBSCRIPTION);
 
-        getSupportLoaderManager().initLoader(0, null, this);
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+            toolbar.setTitle(subscription.toString());
+            setSupportActionBar(toolbar);
 
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>(0));
-        listView = (ListView) findViewById(R.id.messages_list);
-        listView.setAdapter(adapter);
+            getSupportLoaderManager().initLoader(0, null, this);
+
+            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>(0));
+            listView = (ListView) findViewById(R.id.messages_list);
+            listView.setAdapter(adapter);
+        }
     }
 
     public Loader<ArrayList<String>> onCreateLoader(int id, Bundle args) {
@@ -131,7 +136,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
                 }
             } catch (Exception ex) {
                 String msg = ex.getMessage();
-                Log.e(TAG, (msg != null) ? msg : "Impossible to load messages");
+                if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Impossible to load messages");
             }
             return newMsg;
         }
@@ -180,7 +185,7 @@ public class ChatActivity extends AppCompatActivity implements LoaderManager.Loa
         }
 
         public void onEvent(int event, String path) {
-            Log.i(TAG, "Modification event");
+            if (DEBUG) Log.i(TAG, "Modification event");
             loader.onContentChanged();
         }
     }

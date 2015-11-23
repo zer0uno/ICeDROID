@@ -1,16 +1,18 @@
 package unife.icedroid.core.managers;
 
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 import android.content.Context;
 import android.util.Log;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.core.Subscription;
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 public class SubscriptionListManager {
     private static final String TAG = "SubscriptionListManager";
+    private static final boolean DEBUG = true;
+
     private static final String subscriptionsFileName = "subscriptions";
     private volatile static SubscriptionListManager instance = null;
 
@@ -34,7 +36,7 @@ public class SubscriptionListManager {
             }
         } catch (Exception ex) {
             String msg = ex.getMessage();
-            Log.e(TAG, (msg != null) ? msg : "Error loading subscriptions list");
+            if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error loading subscriptions list");
         }
     }
 
@@ -62,10 +64,10 @@ public class SubscriptionListManager {
             fos.close();
             fos = context.openFileOutput(subscription.toString(), Context.MODE_PRIVATE);
             fos.close();
-            Log.i(TAG, "Subscribing to: " + subscription.toString());
+            if (DEBUG) Log.i(TAG, "Subscribing to: " + subscription.toString());
         } catch (Exception ex) {
             String msg = ex.getMessage();
-            Log.e(TAG, (msg != null) ? msg : "Error subscribing");
+            if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error subscribing");
         }
     }
 

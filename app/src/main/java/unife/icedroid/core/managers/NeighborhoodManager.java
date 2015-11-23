@@ -1,11 +1,11 @@
 package unife.icedroid.core.managers;
 
+import unife.icedroid.core.NeighborInfo;
+import unife.icedroid.core.RegularMessage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
-import unife.icedroid.core.NeighborInfo;
-import unife.icedroid.core.RegularMessage;
 
 public class NeighborhoodManager {
 

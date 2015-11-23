@@ -6,13 +6,13 @@ import java.util.Random;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
-import unife.icedroid.ChatActivity;
 import unife.icedroid.core.Constants;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.core.managers.*;
 
 public class ApplevDisseminationChannelService extends IntentService {
     private static final String TAG = "AppDissChannelService";
+    private static final boolean DEBUG = true;
 
     public static final double CACHING_PROBABILITY = 0.1;
     public static final double FORWARD_PROBABILITY = 0.3;
@@ -29,8 +29,6 @@ public class ApplevDisseminationChannelService extends IntentService {
         messageQueueManager = MessageQueueManager.getMessageQueueManager();
         subscriptionListManager = SubscriptionListManager.getSubscriptionListManager();
         neighborhoodManager = NeighborhoodManager.getNeighborhoodManager();
-
-        Log.i(TAG, "ApplevDisseminationChannelService ON");
     }
 
     @Override
@@ -57,17 +55,11 @@ public class ApplevDisseminationChannelService extends IntentService {
                         String data = receptionTime + " " + sender + ": " + msg + "\n";
                         fos.write(data.getBytes());
                         fos.close();
-                        Log.i(TAG,  "Message: " + data + " saved");
+                        if (DEBUG) Log.i(TAG,  "Message: " + data + " saved");
                     } catch (Exception ex) {
                         String msg = ex.getMessage();
-                        Log.e(TAG, (msg != null) ? msg : "Impossible to save the message");
+                        if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Impossible to save the message");
                     }
-                    /**
-                     * TODO
-                     * inviare il messaggio al componente per la visualizzazione dei nuovi
-                     * messaggi, il quale dovrà controllare che il messaggio non sia quello mio che
-                     * ho creato prima
-                    */
                 } else if (!subscriptionListManager.isSubscribedToChannel(regularMessage)) {
                     Random random = new Random(System.currentTimeMillis());
                     if (random.nextDouble() > CACHING_PROBABILITY) {
@@ -123,5 +115,4 @@ public class ApplevDisseminationChannelService extends IntentService {
         }
 
     }
-
 }
