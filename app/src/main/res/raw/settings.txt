@@ -7,7 +7,7 @@
 # Settings are in the form: SettingName (space)= (space)value
 
 ## Name of the wirelss network interface to use:
-NetworkInteface = wlan0
+NetworkInterface = wlan0
 
 ## ESSID is the identifier of the network you want to create
 ESSID = ICEDROID_NETWORK

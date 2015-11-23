@@ -12,6 +12,7 @@ import unife.icedroid.utils.Settings;
 
 public class ICeDROIDActivity extends AppCompatActivity {
     private static final String TAG = "ICeDROIDActivity";
+    private static final boolean DEBUG = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +75,6 @@ public class ICeDROIDActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.i(TAG, "ICeDROIDActivity destroyed");
+        if (DEBUG) Log.i(TAG, "ICeDROIDActivity destroyed");
     }
 }

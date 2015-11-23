@@ -47,36 +47,51 @@ public class Settings {
                 resources.openRawResource(R.raw.settings)));
         String[] setting;
         String line;
-
+        String settingName;
         while ((line = br.readLine()) != null) {
             setting = line.split(" ");
-            switch (setting[0]) {
-                case "NetworkInterface":
-                    networkInterface = setting[2];
-                case "ESSID":
-                    networkESSID = setting[2];
-                case "NetworkChannel":
-                    networkChannel = setting[2];
-                case "HostID":
-                    if (!setting[2].equals("null")) {
-                        hostID = setting[2];
-                    } else {
-                        hostID = null;
-                    }
-                case "HostIP":
-                    if (!setting[2].equals("null")) {
-                        hostIP = setting[2];
-                    } else {
-                        hostIP = null;
-                    }
-                case "NetworkMask":
-                    networkMask = "/" + setting[2];
-                case "BroadcastAddress":
-                    networkBroadcastAddress = setting[2];
-                case "ReceivePort":
-                    receivePort = Integer.parseInt(setting[2]);
-                case "MsgSize":
-                    messageSize = Integer.parseInt(setting[2]);
+            if (setting.length > 0) {
+                settingName = setting[0];
+
+                switch (settingName) {
+                    case "NetworkInterface":
+                        networkInterface = setting[2];
+                        break;
+                    case "ESSID":
+                        networkESSID = setting[2];
+                        break;
+                    case "NetworkChannel":
+                        networkChannel = setting[2];
+                        break;
+                    case "HostID":
+                        if (!setting[2].equals("null")) {
+                            hostID = setting[2];
+                        } else {
+                            hostID = null;
+                        }
+                        break;
+                    case "HostIP":
+                        if (!setting[2].equals("null")) {
+                            hostIP = setting[2];
+                        } else {
+                            hostIP = null;
+                        }
+                        break;
+                    case "NetworkMask":
+                        networkMask = "/" + setting[2];
+                        break;
+                    case "BroadcastAddress":
+                        networkBroadcastAddress = setting[2];
+                        break;
+                    case "ReceivePort":
+                        receivePort = Integer.parseInt(setting[2]);
+                        break;
+                    case "MsgSize":
+                        messageSize = Integer.parseInt(setting[2]);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }
@@ -155,8 +170,6 @@ public class Settings {
                         String msg = ex.getMessage();
                         if (DEBUG) Log.e(TAG, "Error loading settings!");
                         if (instance != null) instance.close();
-                    } finally {
-                        instance = null;
                     }
                 }
             }
@@ -237,6 +250,8 @@ public class Settings {
 
     public void close() {
         try {
+            instance = null;
+
             wifiLock.release();
             wifiManager.setWifiEnabled(false);
 
