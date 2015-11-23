@@ -1,6 +1,7 @@
 package unife.icedroid.core;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Subscription implements Serializable {
 
@@ -20,7 +21,9 @@ public class Subscription implements Serializable {
         return groupName;
     }
 
-    public boolean equals(Subscription subscription) {
+    @Override
+    public boolean equals(Object object) {
+        Subscription subscription = (Subscription) object;
         return (channelID.equals(subscription.channelID) &&
                 groupName.equals(subscription.groupName));
     }

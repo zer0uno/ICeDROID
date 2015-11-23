@@ -24,13 +24,12 @@ public class BroadcastReceiveThread implements Runnable {
     public void run() {
         if (!Thread.interrupted()) {
             try {
-                if (DEBUG) Log.i(TAG, "UDP Socket is up");
+                if (DEBUG) Log.i(TAG, "UDP Socket is up to receive!");
                 DatagramPacket packet = null;
                 byte[] data = null;
                 while (true) {
                     data = new byte[s.getMessageSize()];
                     packet = new DatagramPacket(data, data.length);
-                    if (DEBUG) Log.i(TAG, "Waiting for a message...");
                     socket.receive(packet);
                     MessageDispatcher.deliver(context, packet);
                 }

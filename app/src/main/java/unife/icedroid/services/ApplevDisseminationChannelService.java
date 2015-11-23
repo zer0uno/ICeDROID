@@ -1,14 +1,14 @@
 package unife.icedroid.services;
 
-import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.Random;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 import unife.icedroid.core.Constants;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.core.managers.*;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class ApplevDisseminationChannelService extends IntentService {
     private static final String TAG = "AppDissChannelService";
@@ -72,7 +72,6 @@ public class ApplevDisseminationChannelService extends IntentService {
                     messageQueueManager.addToCache(regularMessage);
                     forwardMessage(regularMessage);
                 }
-
             }
 
         }

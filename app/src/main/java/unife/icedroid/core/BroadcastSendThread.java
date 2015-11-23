@@ -3,6 +3,9 @@ package unife.icedroid.core;
 import android.util.Log;
 import unife.icedroid.core.managers.MessageQueueManager;
 import unife.icedroid.utils.Settings;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
@@ -38,18 +41,35 @@ public class BroadcastSendThread implements Runnable {
             try {
                 InetAddress broadcastAddress = InetAddress.
                                                         getByName(s.getNetworkBroadcastAddress());
+                Message message = null;
                 byte[] data = null;
+                ByteArrayOutputStream byteArrayInputStream;
+                ObjectOutputStream objectOutputStream;
                 DatagramPacket packet = null;
 
                 while (true) {
                     if (DEBUG) Log.i(TAG, "Waiting for a message to send...");
-                    data = messageQueueManager.getMessageToSend();
-                    Thread.sleep(10000);
+                    message = messageQueueManager.getMessageToSend();
+
+                    //Need to ger a byte representation of the message
+                    byteArrayInputStream = new ByteArrayOutputStream(s.getMessageSize());
+                    try {
+                        objectOutputStream = new ObjectOutputStream(byteArrayInputStream);
+                        objectOutputStream.writeObject(message);
+                        data = byteArrayInputStream.toByteArray();
+                    } catch (IOException ex) {
+                        data = null;
+                        String msg = ex.getMessage();
+                        if (DEBUG) Log.e(TAG, (msg != null) ? msg :
+                                            "Impossible to convert to byte: " + message);
+                    }
+
+                    Thread.sleep(6000);
                     if (data != null) {
                         packet = new DatagramPacket(data, data.length,
                                                             broadcastAddress, s.getReceivePort());
                         socket.send(packet);
-                        if (DEBUG) Log.i(TAG, "Message sent: " + data);
+                        if (DEBUG) Log.i(TAG, "Message sent: " + message);
                     }
                 }
             } catch (Exception ex) {

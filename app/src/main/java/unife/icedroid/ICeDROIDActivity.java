@@ -8,6 +8,11 @@ import android.content.Intent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import java.util.ArrayList;
+import unife.icedroid.core.Subscription;
+import unife.icedroid.core.managers.SubscriptionListManager;
 import unife.icedroid.utils.Settings;
 
 public class ICeDROIDActivity extends AppCompatActivity {
@@ -43,13 +48,21 @@ public class ICeDROIDActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-
         }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+
+        ArrayList<Subscription> subscriptionsList = SubscriptionListManager.
+                                            getSubscriptionListManager().getSubscriptionsList();
+        ArrayAdapter<Subscription> adapter = new ArrayAdapter<>(this,
+                                                    android.R.layout.simple_list_item_1,
+                                                    subscriptionsList);
+
+        ListView listView = (ListView) findViewById(R.id.subscritions_list);
+        listView.setAdapter(adapter);
     }
 
     @Override

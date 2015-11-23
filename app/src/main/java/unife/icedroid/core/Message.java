@@ -121,4 +121,10 @@ public class Message implements Serializable {
         }
     }
 
+    @Override
+    public String toString() {
+        return typeOfMessage + ": " + hostID + ", MsgID: " + msgID +
+                " ReceptionTime: " + receptionTime;
+    }
+
 }

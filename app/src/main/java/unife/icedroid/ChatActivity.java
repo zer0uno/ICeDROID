@@ -57,6 +57,17 @@ public class ChatActivity extends AppCompatActivity
         }
     }
 
+    public void sendMessage(View v) {
+        EditText editText = (EditText) findViewById(R.id.msg);
+        String txt = editText.getText().toString();
+        editText.setText(null);
+        RegularMessage regularMessage = new RegularMessage(subscription, txt);
+
+        Intent intent = new Intent(this, ApplevDisseminationChannelService.class);
+        intent.putExtra(unife.icedroid.core.Constants.EXTRA_ADC_MESSAGE, regularMessage);
+        startService(intent);
+    }
+
     public Loader<ArrayList<String>> onCreateLoader(int id, Bundle args) {
         return new MessagesLoader(this, subscription);
     }
@@ -69,18 +80,6 @@ public class ChatActivity extends AppCompatActivity
     }
 
     public void onLoaderReset(Loader<ArrayList<String>> loader) {}
-
-    public void sendMessage(View v) {
-        EditText editText = (EditText) findViewById(R.id.msg);
-        String txt = editText.getText().toString();
-        editText.setText(null);
-        RegularMessage regularMessage = new RegularMessage(subscription, txt);
-
-        Intent intent = new Intent(this, ApplevDisseminationChannelService.class);
-        intent.putExtra(unife.icedroid.core.Constants.EXTRA_ADC_MESSAGE, regularMessage);
-        startService(intent);
-    }
-
 
     private static class MessagesLoader extends AsyncTaskLoader<ArrayList<String>> {
 

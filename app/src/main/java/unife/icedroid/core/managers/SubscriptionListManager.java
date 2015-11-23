@@ -76,12 +76,7 @@ public class SubscriptionListManager {
     }
 
     public synchronized boolean isSubscribedToMessage(RegularMessage msg) {
-        for (Subscription s : subscriptionsList) {
-            if (s.equals(msg.getSubscription())) {
-                return true;
-            }
-        }
-        return false;
+        return subscriptionsList.contains(msg.getSubscription());
     }
 
     public synchronized boolean isSubscribedToChannel(RegularMessage msg) {

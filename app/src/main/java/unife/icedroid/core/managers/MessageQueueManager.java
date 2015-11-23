@@ -1,13 +1,9 @@
 package unife.icedroid.core.managers;
 
-import android.util.Log;
 import unife.icedroid.core.HelloMessage;
 import unife.icedroid.core.Message;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.utils.Settings;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.*;
 
 public class MessageQueueManager {
@@ -170,7 +166,7 @@ public class MessageQueueManager {
         }
     }
 
-    public byte[] getMessageToSend() throws InterruptedException {
+    public Message getMessageToSend() throws InterruptedException {
         Settings s = Settings.getSettings();
         Message message = null;
         synchronized (forwardingMessages) {
@@ -183,6 +179,10 @@ public class MessageQueueManager {
                     }
                 }
 
+                /**
+                 * TODO
+                 * Migliorare gestione indici
+                */
                 if (indexForwardingMessages >= forwardingMessages.size()) {
                     indexForwardingMessages = 0;
                 }
@@ -196,20 +196,7 @@ public class MessageQueueManager {
                 indexForwardingMessages++;
             }
         }
-        byte[] messageToArray = null;
-        ByteArrayOutputStream byteArrayInputStream = new ByteArrayOutputStream(s.getMessageSize());
-
-        try {
-            if (DEBUG) Log.i(TAG, message.getTypeOfMessage() + " " + message.getMsgID());
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayInputStream);
-            objectOutputStream.writeObject(message);
-            messageToArray = byteArrayInputStream.toByteArray();
-        } catch (IOException ex) {
-            String msg = ex.getMessage();
-            if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Impossible to convert to byte: " + message);
-        }
-
-        return messageToArray;
+        return message;
     }
 
     private boolean isExpired(Message msg) {
