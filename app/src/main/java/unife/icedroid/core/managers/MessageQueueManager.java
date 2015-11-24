@@ -7,6 +7,10 @@ import unife.icedroid.utils.Settings;
 import java.util.*;
 
 public class MessageQueueManager {
+    /**
+     * TODO
+     * Ritornare sempre delle copie
+     */
     private static final String TAG = "MessageQueueManager";
     private static final boolean DEBUG = true;
 
@@ -126,7 +130,23 @@ public class MessageQueueManager {
     }
 
     public ArrayList<RegularMessage> getCachedMessages() {
-        return cachedMessages;
+        synchronized (cachedMessages) {
+            return copyArrayList(cachedMessages);
+        }
+    }
+
+    public ArrayList<RegularMessage> getDiscardedMessages() {
+        synchronized (discardedMessages) {
+            return copyArrayList(discardedMessages);
+        }
+    }
+
+    public ArrayList<RegularMessage> getCachedAndDiscardedMessages() {
+        synchronized (cachedMessages) {
+            synchronized (discardedMessages) {
+                return joinArrayLists(cachedMessages, discardedMessages);
+            }
+        }
     }
 
     public void removeFromQueue(ArrayList<RegularMessage> queue, RegularMessage msg) {
@@ -206,6 +226,22 @@ public class MessageQueueManager {
             }
         }
         return false;
+    }
+
+    private <T> ArrayList<T> copyArrayList(ArrayList<T> arrayList) {
+        ArrayList<T> newArrayList = new ArrayList<>(0);
+        for (T item : arrayList) {
+            newArrayList.add(item);
+        }
+        return newArrayList;
+    }
+
+    private <T> ArrayList<T> joinArrayLists(ArrayList<T> listOne, ArrayList<T> listTwo) {
+        ArrayList<T> jointList = copyArrayList(listOne);
+        for (T item : listTwo) {
+            jointList.add(item);
+        }
+        return jointList;
     }
 
 }

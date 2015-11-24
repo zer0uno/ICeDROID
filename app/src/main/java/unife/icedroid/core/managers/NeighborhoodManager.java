@@ -2,12 +2,17 @@ package unife.icedroid.core.managers;
 
 import unife.icedroid.core.NeighborInfo;
 import unife.icedroid.core.RegularMessage;
+import unife.icedroid.core.Subscription;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class NeighborhoodManager {
+    /**
+     * TODO
+     * Ritornare sempre delle copie
+     */
     private volatile static NeighborhoodManager instance;
     private static long ttlOfNeighbor = 35*1000;
 
@@ -54,10 +59,11 @@ public class NeighborhoodManager {
     }
 
     public synchronized boolean isThereNeighborInterestedToMessage(RegularMessage msg) {
+        Subscription subscription = msg.getSubscription();
         for (NeighborInfo neighbor : neighborsList) {
-            //The neighbor must be subscripted to the same subscription and must not have
+            //The neighbor must be subscribed to the same subscription and must not have
             //the message in its own cache
-            if (neighbor.getHostSubscriptions().contains(msg.getSubscription()) &&
+            if (neighbor.getHostSubscriptions().contains(subscription) &&
                 !neighbor.getCachedMessages().contains(msg)) {
                 return true;
             }
@@ -65,9 +71,26 @@ public class NeighborhoodManager {
         return false;
     }
 
-    public synchronized boolean isThereNeighborSubscribedToChannel(String channel) {
+    public synchronized boolean isThereNeighborSubscribedToChannel(RegularMessage msg) {
+        String channel = msg.getSubscription().getChannelID();
         for (NeighborInfo neighbor : neighborsList) {
-            if (neighbor.getHostChannels().contains(channel)) {
+            if (neighbor.getHostChannels().contains(channel) &&
+                    !neighbor.getCachedMessages().contains(msg)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized boolean isThereNeighborWithoutThisMessage(RegularMessage msg) {
+        Subscription subscription = msg.getSubscription();
+        String channel = subscription.getChannelID();
+        //Is there a neighbor that isn't interested to this message, doesn't belong
+        //to the same message channel and hasn't the message in its own cache?
+        for (NeighborInfo neighbor : neighborsList) {
+            if (!neighbor.getHostSubscriptions().contains(subscription) &&
+                !neighbor.getHostChannels().contains(channel) &&
+                !neighbor.getCachedMessages().contains(msg)) {
                 return true;
             }
         }

@@ -21,6 +21,12 @@ import java.util.Random;
 import java.io.BufferedReader;
 
 public class Settings {
+    /**
+     * TODO
+     * Attenzione, che qualcuno possa avere una versione vecchia dei settings,
+     * mai memorizzare l'oggetto ritornato, cioè mai fare Settings s = Settings.getSettings(),
+     * ma sempre utilizzare solo Settings.getSettings()
+    */
     private static final String TAG = "Settings";
     private static final boolean DEBUG = true;
 
@@ -191,7 +197,9 @@ public class Settings {
     }
 
     public static Settings getSettings() {
-        return instance;
+        synchronized (Settings.class) {
+            return instance;
+        }
     }
 
     public String getNetworkInterface() {

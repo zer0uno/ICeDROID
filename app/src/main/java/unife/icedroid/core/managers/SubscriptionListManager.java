@@ -10,6 +10,10 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class SubscriptionListManager {
+    /**
+     * TODO
+     * Ritornare sempre delle copie
+    */
     private static final String TAG = "SubscriptionListManager";
     private static final boolean DEBUG = true;
 

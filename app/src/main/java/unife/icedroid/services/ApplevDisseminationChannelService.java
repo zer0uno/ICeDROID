@@ -82,14 +82,17 @@ public class ApplevDisseminationChannelService extends IntentService {
     }
 
     private void forwardMessage(RegularMessage msg) {
+        /**
+         * TODO
+         * invio solo se c'è lo stretto interessato
+        */
         boolean send = false;
 
         if (neighborhoodManager.isThereNeighborInterestedToMessage(msg)) {
             send = true;
-        } else if (neighborhoodManager.isThereNeighborSubscribedToChannel(
-                                                    msg.getSubscription().getChannelID())) {
+        } else if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
             send = true;
-        } else {
+        } else if (neighborhoodManager.isThereNeighborWithoutThisMessage(msg)) {
             Random random = new Random(System.currentTimeMillis());
             if (random.nextDouble() <= FORWARD_PROBABILITY) {
                 send = true;

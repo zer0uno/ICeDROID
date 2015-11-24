@@ -18,7 +18,8 @@ public class HelloMessage extends Message {
         priority = MAX_PRIORITY_LEVEL;
         hostSubscriptions = SubscriptionListManager.getSubscriptionListManager().
                                                                             getSubscriptionsList();
-        cachedMessages = MessageQueueManager.getMessageQueueManager().getCachedMessages();
+        cachedMessages = MessageQueueManager.getMessageQueueManager().
+                                                                    getCachedAndDiscardedMessages();
     }
 
 
