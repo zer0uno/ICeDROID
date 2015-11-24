@@ -34,3 +34,6 @@ ReceivePort = 49152
 
 ## Message max length
 MsgSize = 2048
+
+## Routing Algorithm
+RoutingAlgorithm = SprayAndWait

@@ -21,7 +21,6 @@ public class RoutingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
-        
         return START_REDELIVER_INTENT;
     }
 

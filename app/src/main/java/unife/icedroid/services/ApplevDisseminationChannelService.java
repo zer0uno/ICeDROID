@@ -5,6 +5,7 @@ import android.content.Intent;
 import unife.icedroid.core.NeighborInfo;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.core.managers.*;
+import unife.icedroid.utils.Settings;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -56,7 +57,7 @@ public class ApplevDisseminationChannelService extends IntentService {
 
                 if (toCache) {
                     messageQueueManager.addToCache(regularMessage);
-                    forwardMessage(regularMessage);
+                    forwardMessage(regularMessage, true);
                 }
             }
 
@@ -73,7 +74,7 @@ public class ApplevDisseminationChannelService extends IntentService {
 
                 synchronized (cachedMessages) {
                     for (RegularMessage msg : cachedMessages) {
-                        forwardMessage(msg);
+                        forwardMessage(msg, false);
                     }
                 }
             }
@@ -81,22 +82,34 @@ public class ApplevDisseminationChannelService extends IntentService {
 
     }
 
-    private void forwardMessage(RegularMessage msg) {
-        /**
-         * TODO
-         * invio solo se c'è lo stretto interessato
-        */
+    private void forwardMessage(RegularMessage msg, boolean newMessage) {
         boolean send = false;
-
-        if (neighborhoodManager.isThereNeighborInterestedToMessage(msg)) {
-            send = true;
-        } else if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
-            send = true;
-        } else if (neighborhoodManager.isThereNeighborWithoutThisMessage(msg)) {
-            Random random = new Random(System.currentTimeMillis());
-            if (random.nextDouble() <= FORWARD_PROBABILITY) {
-                send = true;
-            }
+        switch (Settings.getSettings().getRoutingAlgorithm()) {
+            case SPRAY_AND_WAIT:
+                //If the message is new and comes from this host, then we are in the Spraying Phase
+                if (newMessage && msg.getHostID().equals(Settings.getSettings().getHostID())) {
+                    if (neighborhoodManager.isThereNeighborInterestedToMessage(msg)) {
+                        send = true;
+                    } else if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
+                        send = true;
+                    } else if (neighborhoodManager.isThereNeighborWithoutThisMessage(msg)) {
+                        Random random = new Random(System.currentTimeMillis());
+                        if (random.nextDouble() <= FORWARD_PROBABILITY) {
+                            send = true;
+                        }
+                    }
+                } else {
+                    //If we are not in the spraying phase or the message is not new,
+                    //then according to the Spray and Wait Algorithm the message must be
+                    //delivered only if there is a direct interested neighbor.
+                    if (neighborhoodManager.isThereNeighborInterestedToMessage(msg)) {
+                        send = true;
+                    }
+                }
+                break;
+            default:
+                /** Here to handle more routing algorithms' philosophies **/
+                break;
         }
 
         if (send) {

@@ -29,6 +29,7 @@ public class Settings {
     */
     private static final String TAG = "Settings";
     private static final boolean DEBUG = true;
+    public static enum RoutingAlgorithm {SPRAY_AND_WAIT}
 
     private volatile static Settings instance;
 
@@ -41,6 +42,7 @@ public class Settings {
     private String networkBroadcastAddress;
     private int receivePort;
     private int messageSize;
+    private RoutingAlgorithm routingAlgorithm;
 
     private Context context;
     private WifiManager wifiManager;
@@ -94,6 +96,11 @@ public class Settings {
                         break;
                     case "MsgSize":
                         messageSize = Integer.parseInt(setting[2]);
+                        break;
+                    case "RoutingAlgorithm":
+                        if (setting[2].equals("SprayAndWait")) {
+                            routingAlgorithm = RoutingAlgorithm.SPRAY_AND_WAIT;
+                        }
                         break;
                     default:
                         break;
@@ -267,6 +274,10 @@ public class Settings {
 
     public int getMessageSize() {
         return messageSize;
+    }
+
+    public RoutingAlgorithm getRoutingAlgorithm() {
+        return routingAlgorithm;
     }
 
     public void close() {
