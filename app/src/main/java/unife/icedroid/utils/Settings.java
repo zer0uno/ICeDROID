@@ -123,7 +123,6 @@ public class Settings {
         while (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING) {
             Thread.sleep(1000);
         }
-        wifiManager.startScan();
 
         /**
          *  TODO

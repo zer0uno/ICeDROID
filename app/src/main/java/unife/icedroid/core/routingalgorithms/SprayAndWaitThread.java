@@ -2,6 +2,7 @@ package unife.icedroid.core.routingalgorithms;
 
 import android.app.Service;
 import android.content.Intent;
+import android.util.Log;
 import unife.icedroid.core.Message;
 import unife.icedroid.core.NeighborInfo;
 import unife.icedroid.core.RegularMessage;
@@ -11,6 +12,8 @@ import unife.icedroid.services.ApplevDisseminationChannelService;
 import java.util.ArrayList;
 
 public class SprayAndWaitThread implements Runnable {
+    private static final String TAG = "SprayAndWaitThread";
+    private static final boolean DEBUG = true;
 
     private Service service;
     private int startID;
@@ -24,6 +27,7 @@ public class SprayAndWaitThread implements Runnable {
 
     @Override
     public void run() {
+        if (DEBUG) Log.i(TAG, "Thread started");
         NeighborhoodManager neighborhoodManager = NeighborhoodManager.getNeighborhoodManager();
         float numberOfNeighbors = neighborhoodManager.getNumberOfNeighbors();
         int L = 1; /** L può anche essere determinato in modo dinamico */

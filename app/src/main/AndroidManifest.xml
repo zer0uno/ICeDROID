@@ -29,6 +29,8 @@
         <service android:name=".services.ApplevDisseminationChannelService"
                 android:exported="false"/>
 
+        <service android:name=".services.RoutingService" android:exported="false"/>
+
     </application>
 
     <uses-feature android:name="android.hardware.wifi" android:required="true" />
