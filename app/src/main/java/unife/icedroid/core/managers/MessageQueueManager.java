@@ -149,10 +149,18 @@ public class MessageQueueManager {
         }
     }
 
-    public void removeFromQueue(ArrayList<RegularMessage> queue, RegularMessage msg) {
+    public void removeFromQueue(ArrayList<?> queue, Message msg) {
         synchronized (queue) {
             queue.remove(msg);
         }
+    }
+
+    public void removeMessageFromCachedMessages(RegularMessage msg) {
+        removeFromQueue(cachedMessages, msg);
+    }
+
+    public void removeMessageFromForwardingMessages(Message msg) {
+       removeFromQueue(forwardingMessages, msg);
     }
 
     public void removeRegularMessagesFromForwardingMessages() {

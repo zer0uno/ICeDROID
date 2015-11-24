@@ -19,6 +19,7 @@ import android.os.FileObserver;
 import android.util.Log;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.core.Subscription;
+import unife.icedroid.core.managers.ChatsManager;
 import unife.icedroid.services.RoutingService;
 import unife.icedroid.utils.Settings;
 
@@ -64,7 +65,10 @@ public class ChatActivity extends AppCompatActivity
         String txt = editText.getText().toString();
         if (!txt.equals("")) {
             editText.setText(null);
+
             RegularMessage message = new RegularMessage(subscription, txt);
+            ChatsManager.saveMessageInConversation(getFilesDir().getAbsolutePath(), message);
+
             Intent intent = new Intent(this, RoutingService.class);
             intent.putExtra(RoutingService.EXTRA_NEW_MESSAGE, message);
             startService(intent);

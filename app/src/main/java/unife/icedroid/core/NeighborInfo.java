@@ -75,9 +75,10 @@ public class NeighborInfo {
         return channels;
     }
 
+    @Override
     public boolean equals(Object object) {
         NeighborInfo nb = (NeighborInfo) object;
-        return hostID == nb.hostID;
+        return hostID.equals(nb.hostID);
     }
 
 }

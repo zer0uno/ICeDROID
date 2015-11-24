@@ -18,6 +18,7 @@ public class NeighborhoodManager {
 
     private ArrayList<NeighborInfo> neighborsList;
     private Timer neighborhoodManagerTimer;
+    private long lastUpdate;
 
 
     private NeighborhoodManager() {
@@ -51,11 +52,19 @@ public class NeighborhoodManager {
         Date expirationTime = new Date(neighbor.getLastTimeSeen().getTime() + ttlOfNeighbor);
         neighborhoodManagerTimer.schedule(task, expirationTime);
 
+        lastUpdate = System.currentTimeMillis();
+        //Notify that an update was done
+        neighborsList.notifyAll();
+
         return newNeighbor;
     }
 
     public synchronized void remove(NeighborInfo neighbor) {
         neighborsList.remove(neighbor);
+    }
+
+    public synchronized int getNumberOfNeighbors() {
+        return neighborsList.size();
     }
 
     public synchronized boolean isThereNeighborInterestedToMessage(RegularMessage msg) {
@@ -64,6 +73,18 @@ public class NeighborhoodManager {
             //The neighbor must be subscribed to the same subscription and must not have
             //the message in its own cache
             if (neighbor.getHostSubscriptions().contains(subscription) &&
+                !neighbor.getCachedMessages().contains(msg)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public synchronized boolean isThereNeighborNotInterestedToMessageAndNotCached(
+                                                                            RegularMessage msg) {
+        Subscription subscription = msg.getSubscription();
+        for (NeighborInfo neighbor : neighborsList) {
+            if (!neighbor.getHostSubscriptions().contains(subscription) &&
                 !neighbor.getCachedMessages().contains(msg)) {
                 return true;
             }
@@ -95,6 +116,34 @@ public class NeighborhoodManager {
             }
         }
         return false;
+    }
+
+    public synchronized ArrayList<NeighborInfo> whoHasThisMessageButNotInterested(
+                                                                            RegularMessage msg) {
+        ArrayList<NeighborInfo> neighbors = new ArrayList<>(0);
+        Subscription subscription = msg.getSubscription();
+        for (NeighborInfo neighbor : neighborsList) {
+            if (!neighbor.getHostSubscriptions().contains(subscription)) {
+                if (neighbor.getCachedMessages().contains(msg)) {
+                    neighbors.add(neighbor);
+                }
+            }
+        }
+        return neighbors;
+    }
+
+    public void isThereAnUpdate(long time) {
+        synchronized (neighborsList) {
+            while (time == lastUpdate) {
+                try {
+                    neighborsList.wait();
+                } catch (Exception ex) {}
+            }
+        }
+    }
+
+    public long getLastUpdate() {
+        return lastUpdate;
     }
 
     private int isNeighborPresent(NeighborInfo neighbor) {

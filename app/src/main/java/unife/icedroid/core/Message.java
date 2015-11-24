@@ -103,7 +103,9 @@ public class Message implements Serializable {
         this.size = size;
     }
 
-    public boolean equals(Message msg) {
+    @Override
+    public boolean equals(Object object) {
+        Message msg = (Message) object;
         return (typeOfMessage.equals(msg.typeOfMessage) &&
                 hostID.equals(msg.hostID) &&
                 (msgID == msg.msgID));

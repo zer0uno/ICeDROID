@@ -39,25 +39,50 @@ public class ApplevDisseminationChannelService extends IntentService {
         //There's a new regular message, first it must be decided whether to cache or not
         //and following whether to forward it or not
         if (regularMessage != null) {
-            boolean toCache = true;
-
-            if (!messageQueueManager.isCached(regularMessage) &&
-                !messageQueueManager.isDiscarded(regularMessage)) {
-
-                if (subscriptionListManager.isSubscribedToMessage(regularMessage)) {
-                    ChatsManager.saveMessageInConversation(getFilesDir().getAbsolutePath(),
-                                                                                regularMessage);
-                } else if (!subscriptionListManager.isSubscribedToChannel(regularMessage)) {
-                    Random random = new Random(System.currentTimeMillis());
-                    if (random.nextDouble() > CACHING_PROBABILITY) {
-                        toCache = false;
-                        messageQueueManager.addToDiscarded(regularMessage);
-                    }
+            //This host's messages
+            if (regularMessage.getHostID().equals(Settings.getSettings().getHostID())) {
+                switch (Settings.getSettings().getRoutingAlgorithm()) {
+                    case SPRAY_AND_WAIT:
+                        messageQueueManager.removeMessageFromForwardingMessages(regularMessage);
+                        messageQueueManager.removeMessageFromCachedMessages(regularMessage);
+                        forwardMessage(regularMessage, true);
+                        messageQueueManager.addToCache(regularMessage);
+                        break;
+                    default:
+                        break;
                 }
 
-                if (toCache) {
-                    messageQueueManager.addToCache(regularMessage);
-                    forwardMessage(regularMessage, true);
+            } else {
+                //Other hosts' messages
+                boolean toCache = true;
+
+                if (!messageQueueManager.isCached(regularMessage) &&
+                        !messageQueueManager.isDiscarded(regularMessage)) {
+
+                    if (subscriptionListManager.isSubscribedToMessage(regularMessage)) {
+                        ChatsManager.saveMessageInConversation(getFilesDir().getAbsolutePath(),
+                                regularMessage);
+                    } else if (!subscriptionListManager.isSubscribedToChannel(regularMessage)) {
+                        switch (Settings.getSettings().getRoutingAlgorithm()) {
+                            case SPRAY_AND_WAIT:
+                                Integer L = regularMessage.getProperty("L");
+                                if (L == null || L <= 0) {
+                                    Random random = new Random(System.currentTimeMillis());
+                                    if (random.nextDouble() > CACHING_PROBABILITY) {
+                                        toCache = false;
+                                        messageQueueManager.addToDiscarded(regularMessage);
+                                    }
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    if (toCache) {
+                        messageQueueManager.addToCache(regularMessage);
+                        forwardMessage(regularMessage, false);
+                    }
                 }
             }
 
@@ -82,12 +107,12 @@ public class ApplevDisseminationChannelService extends IntentService {
 
     }
 
-    private void forwardMessage(RegularMessage msg, boolean newMessage) {
+    private void forwardMessage(RegularMessage msg, boolean thisHostMessage) {
         boolean send = false;
         switch (Settings.getSettings().getRoutingAlgorithm()) {
             case SPRAY_AND_WAIT:
-                //If the message is new and comes from this host, then we are in the Spraying Phase
-                if (newMessage && msg.getHostID().equals(Settings.getSettings().getHostID())) {
+                //If the message is new from this host
+                if (thisHostMessage) {
                     if (neighborhoodManager.isThereNeighborInterestedToMessage(msg)) {
                         send = true;
                     } else if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
