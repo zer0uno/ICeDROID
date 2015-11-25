@@ -4,6 +4,8 @@ import unife.icedroid.core.HelloMessage;
 import unife.icedroid.core.Message;
 import unife.icedroid.core.RegularMessage;
 import unife.icedroid.utils.Settings;
+import unife.icedroid.core.messagecachingstrategies.MessageCachingStrategy;
+import unife.icedroid.core.messageforwardingstrategies.MessageForwardingStrategy;
 import java.util.*;
 
 public class MessageQueueManager {
@@ -21,6 +23,8 @@ public class MessageQueueManager {
     private ArrayList<Message> forwardingMessages;
     private Timer cachedMessagesTimer;
     private Timer discardedMessagesTimer;
+    private MessageCachingStrategy cachingStrategy;
+    private MessageForwardingStrategy forwardingStrategy;
 
     private static int indexForwardingMessages;
 
@@ -33,6 +37,9 @@ public class MessageQueueManager {
 
         cachedMessagesTimer = new Timer();
         discardedMessagesTimer = new Timer();
+
+        cachingStrategy = MessageCachingStrategy.newInstance(Settings.getSettings());
+        forwardingStrategy = MessageForwardingStrategy.newInstance(Settings.getSettings());
     }
 
     public static MessageQueueManager getMessageQueueManager() {
@@ -60,13 +67,9 @@ public class MessageQueueManager {
     }
 
     public void addToCache(final RegularMessage msg) {
-        /**
-         * TODO
-         * Aggiungere politiche di caching
-        */
         if (!isExpired(msg)) {
             synchronized (cachedMessages) {
-                cachedMessages.add(msg);
+                cachingStrategy.add(cachedMessages, msg);
             }
 
             //If the msg TTL isn't infinite then set a timer to delete it.
@@ -107,24 +110,7 @@ public class MessageQueueManager {
 
     public void addToForwardingMessages(Message msg) {
         synchronized (forwardingMessages) {
-            //Hello Messages have the highest priority.
-            //There can't be two hello messages in the forwarding queue, so it must be checked
-            //if there is one, if there is it must be removed and substituted.
-            if (msg.getTypeOfMessage().equals(HelloMessage.HELLO_MESSAGE)) {
-                removeHelloMessageFromForwardingMessages();
-                if (indexForwardingMessages >= forwardingMessages.size()) {
-                    forwardingMessages.add(0, msg);
-                } else {
-                    forwardingMessages.add(indexForwardingMessages, msg);
-                }
-
-            } else {
-                /**
-                 * TODO
-                 * Implementare delle politiche di forwarding
-                */
-                forwardingMessages.add(msg);
-            }
+            forwardingStrategy.add(forwardingMessages, msg, indexForwardingMessages);
             forwardingMessages.notifyAll();
         }
     }
@@ -182,18 +168,6 @@ public class MessageQueueManager {
         }
     }
 
-    public void removeHelloMessageFromForwardingMessages() {
-        synchronized (forwardingMessages) {
-            for (int i = 0; i < forwardingMessages.size(); i++) {
-                if (forwardingMessages.get(i).getTypeOfMessage().equals(
-                                                                    HelloMessage.HELLO_MESSAGE)) {
-                    forwardingMessages.remove(i);
-                    break;
-                }
-            }
-        }
-    }
-
     public Message getMessageToSend() throws InterruptedException {
         Settings s = Settings.getSettings();
         Message message = null;
@@ -207,10 +181,6 @@ public class MessageQueueManager {
                     }
                 }
 
-                /**
-                 * TODO
-                 * Migliorare gestione indici
-                */
                 if (indexForwardingMessages >= forwardingMessages.size()) {
                     indexForwardingMessages = 0;
                 }
@@ -220,8 +190,9 @@ public class MessageQueueManager {
                 if (isExpired(message)) {
                     forwardingMessages.remove(indexForwardingMessages);
                     message = null;
+                } else {
+                    indexForwardingMessages++;
                 }
-                indexForwardingMessages++;
             }
         }
         return message;

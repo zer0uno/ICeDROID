@@ -20,6 +20,7 @@ public class HelloMessage extends Message {
                                                                             getSubscriptionsList();
         cachedMessages = MessageQueueManager.getMessageQueueManager().
                                                                     getCachedAndDiscardedMessages();
+        setSize();
     }
 
 

@@ -29,7 +29,10 @@ public class Settings {
     */
     private static final String TAG = "Settings";
     private static final boolean DEBUG = true;
+
     public static enum RoutingAlgorithm {SPRAY_AND_WAIT}
+    public static enum CachingStrategy {FIFO, RANDOM}
+    public static enum ForwardingStrategy {FIFO, PRIORITY}
 
     private volatile static Settings instance;
 
@@ -43,6 +46,9 @@ public class Settings {
     private int receivePort;
     private int messageSize;
     private RoutingAlgorithm routingAlgorithm;
+    private int cacheSize;
+    private CachingStrategy cachingStrategy;
+    private ForwardingStrategy forwardingStrategy;
 
     private Context context;
     private WifiManager wifiManager;
@@ -100,6 +106,35 @@ public class Settings {
                     case "RoutingAlgorithm":
                         if (setting[2].equals("SprayAndWait")) {
                             routingAlgorithm = RoutingAlgorithm.SPRAY_AND_WAIT;
+                        }
+                        break;
+                    case "CacheSize":
+                        cacheSize = Integer.parseInt(setting[2]);
+                        break;
+                    case "CachingStrategy":
+                        switch (setting[2]) {
+                            case "FIFO":
+                                cachingStrategy = CachingStrategy.FIFO;
+                                break;
+                            case "RANDOM":
+                                cachingStrategy = CachingStrategy.RANDOM;
+                                break;
+                            default:
+                                cachingStrategy = CachingStrategy.FIFO;
+                                break;
+                        }
+                        break;
+                    case "ForwardingStrategy":
+                        switch (setting[2]) {
+                            case "FIFO":
+                                forwardingStrategy = ForwardingStrategy.FIFO;
+                                break;
+                            case "PRIORITY":
+                                forwardingStrategy = ForwardingStrategy.PRIORITY;
+                                break;
+                            default:
+                                forwardingStrategy = ForwardingStrategy.FIFO;
+                                break;
                         }
                         break;
                     default:
@@ -277,6 +312,18 @@ public class Settings {
 
     public RoutingAlgorithm getRoutingAlgorithm() {
         return routingAlgorithm;
+    }
+
+    public int getCacheSize() {
+        return cacheSize;
+    }
+
+    public CachingStrategy getCachingStrategy() {
+        return cachingStrategy;
+    }
+
+    public ForwardingStrategy getForwardingStrategy() {
+        return forwardingStrategy;
     }
 
     public void close() {

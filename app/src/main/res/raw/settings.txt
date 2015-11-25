@@ -37,3 +37,12 @@ MsgSize = 2048
 
 ## Routing Algorithm
 RoutingAlgorithm = SprayAndWait
+
+## Messages' cache dimension (in MB)
+CacheSize = 2
+
+## Caching strategy, in case the cache is full
+CachingStrategy = FIFO
+
+## Forwarding strategy
+ForwardingStrategy = PRIORITY

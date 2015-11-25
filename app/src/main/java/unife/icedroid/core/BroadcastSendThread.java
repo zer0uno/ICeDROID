@@ -43,7 +43,7 @@ public class BroadcastSendThread implements Runnable {
                                                         getByName(s.getNetworkBroadcastAddress());
                 Message message = null;
                 byte[] data = null;
-                ByteArrayOutputStream byteArrayInputStream;
+                ByteArrayOutputStream byteArrayOutputStream;
                 ObjectOutputStream objectOutputStream;
                 DatagramPacket packet = null;
 
@@ -52,11 +52,11 @@ public class BroadcastSendThread implements Runnable {
                     message = messageQueueManager.getMessageToSend();
 
                     //Need to ger a byte representation of the message
-                    byteArrayInputStream = new ByteArrayOutputStream(s.getMessageSize());
+                    byteArrayOutputStream = new ByteArrayOutputStream();
                     try {
-                        objectOutputStream = new ObjectOutputStream(byteArrayInputStream);
+                        objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
                         objectOutputStream.writeObject(message);
-                        data = byteArrayInputStream.toByteArray();
+                        data = byteArrayOutputStream.toByteArray();
                     } catch (IOException ex) {
                         data = null;
                         String msg = ex.getMessage();
@@ -68,7 +68,7 @@ public class BroadcastSendThread implements Runnable {
                      *  TODO
                      *  da rimuovere
                     */
-                    Thread.sleep(6000);
+                    //Thread.sleep(6000);
                     if (data != null) {
                         packet = new DatagramPacket(data, data.length,
                                                             broadcastAddress, s.getReceivePort());

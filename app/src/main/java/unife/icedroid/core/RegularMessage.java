@@ -18,8 +18,8 @@ public class RegularMessage extends Message {
         priority = NO_PRIORITY_LEVEL;
         contentData = data;
         subscription = sbsc;
-        size = contentData.getBytes().length;
         properties = new HashMap<>(0);
+        setSize();
     }
 
     public Subscription getSubscription() {

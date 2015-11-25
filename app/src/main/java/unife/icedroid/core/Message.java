@@ -1,10 +1,16 @@
 package unife.icedroid.core;
 
+import android.util.Log;
 import unife.icedroid.utils.Settings;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Date;
 
 public class Message implements Serializable {
+    private static final String TAG = "Message";
+    private static final boolean DEBUG = true;
+
     public static final int INFINITE_TTL = -1;
     public static final int NO_PRIORITY_LEVEL = 0;
     public static final int MAX_PRIORITY_LEVEL = Integer.MAX_VALUE;
@@ -99,8 +105,8 @@ public class Message implements Serializable {
         this.priority = priority;
     }
 
-    public void setSize(int size) {
-        this.size = size;
+    public void setSize() {
+        this.size = calculateSize();
     }
 
     @Override
@@ -129,4 +135,14 @@ public class Message implements Serializable {
                 " ReceptionTime: " + receptionTime;
     }
 
+    private int calculateSize() {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try {
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            objectOutputStream.writeObject(this);
+        } catch (Exception ex) {
+            if (DEBUG) Log.e(TAG, "Error getting size of the message");
+        }
+        return byteArrayOutputStream.toByteArray().length;
+    }
 }
