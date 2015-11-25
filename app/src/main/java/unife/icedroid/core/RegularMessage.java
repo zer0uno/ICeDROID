@@ -45,12 +45,4 @@ public class RegularMessage extends Message {
     public void setProperty(String key, Integer value) {
         properties.put(key, value);
     }
-
-    @Override
-    public boolean equals(Object object) {
-        RegularMessage msg = (RegularMessage) object;
-        return (super.equals(msg) && subscription.equals(msg.subscription));
-
-    }
-
 }

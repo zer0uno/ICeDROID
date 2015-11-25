@@ -64,6 +64,10 @@ public class BroadcastSendThread implements Runnable {
                                             "Impossible to convert to byte: " + message);
                     }
 
+                    /**
+                     *  TODO
+                     *  da rimuovere
+                    */
                     Thread.sleep(6000);
                     if (data != null) {
                         packet = new DatagramPacket(data, data.length,

@@ -283,10 +283,10 @@ public class Settings {
         try {
             instance = null;
 
+            NICManager.stopWifiAdhoc(this);
+
             wifiLock.release();
             wifiManager.setWifiEnabled(false);
-
-            NICManager.stopWifiAdhoc(this);
 
             Intent intent;
             //BroadcastReceiveService

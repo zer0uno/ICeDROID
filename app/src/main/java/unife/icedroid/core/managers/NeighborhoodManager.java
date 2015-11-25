@@ -134,11 +134,11 @@ public class NeighborhoodManager {
 
     public void isThereAnUpdate(long time) {
         synchronized (neighborsList) {
-            while (time == lastUpdate) {
-                try {
+            try {
+                while (time == lastUpdate) {
                     neighborsList.wait();
-                } catch (Exception ex) {}
-            }
+                }
+            } catch (Exception ex) {}
         }
     }
 

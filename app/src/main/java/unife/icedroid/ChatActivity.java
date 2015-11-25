@@ -33,6 +33,7 @@ public class ChatActivity extends AppCompatActivity
 
     private ListView listView;
     private ArrayAdapter<String> adapter;
+    private ArrayList<String> messages;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +54,9 @@ public class ChatActivity extends AppCompatActivity
 
             getSupportLoaderManager().initLoader(0, null, this);
 
-            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
-                                                                        new ArrayList<String>(0));
+            messages = loadMessages();
+
+            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, messages);
             listView = (ListView) findViewById(R.id.messages_list);
             listView.setAdapter(adapter);
         }
@@ -88,6 +90,22 @@ public class ChatActivity extends AppCompatActivity
 
     public void onLoaderReset(Loader<ArrayList<String>> loader) {}
 
+    private ArrayList<String> loadMessages() {
+        ArrayList<String> messages = new ArrayList<>(0);
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(
+                                                         openFileInput(subscription.toString())));
+            String line;
+            while ((line = br.readLine()) != null) {
+                messages.add(line);
+            }
+        } catch (Exception ex) {
+
+        }
+
+        return messages;
+    }
+
     private static class MessagesLoader extends AsyncTaskLoader<ArrayList<String>> {
 
         private MessagesObserver observer;
@@ -116,7 +134,7 @@ public class ChatActivity extends AppCompatActivity
                 observer.startWatching();
             }
 
-            if (takeContentChanged() || messages == null) {
+            if (takeContentChanged()) {
                 forceLoad();
             }
         }

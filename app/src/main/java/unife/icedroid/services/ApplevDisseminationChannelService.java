@@ -117,7 +117,7 @@ public class ApplevDisseminationChannelService extends IntentService {
                         send = true;
                     } else if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
                         send = true;
-                    } else if (neighborhoodManager.isThereNeighborWithoutThisMessage(msg)) {
+                    } else /*if (neighborhoodManager.isThereNeighborWithoutThisMessage(msg))*/ {
                         Random random = new Random(System.currentTimeMillis());
                         if (random.nextDouble() <= FORWARD_PROBABILITY) {
                             send = true;

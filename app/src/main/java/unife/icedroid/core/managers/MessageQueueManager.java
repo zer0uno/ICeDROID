@@ -131,13 +131,13 @@ public class MessageQueueManager {
 
     public ArrayList<RegularMessage> getCachedMessages() {
         synchronized (cachedMessages) {
-            return copyArrayList(cachedMessages);
+            return new ArrayList(cachedMessages);
         }
     }
 
     public ArrayList<RegularMessage> getDiscardedMessages() {
         synchronized (discardedMessages) {
-            return copyArrayList(discardedMessages);
+            return new ArrayList<>(discardedMessages);
         }
     }
 
@@ -229,23 +229,15 @@ public class MessageQueueManager {
 
     private boolean isExpired(Message msg) {
         if (msg.getTtl() != Message.INFINITE_TTL) {
-            if (msg.getCreationTime().getTime() + msg.getTtl() >= System.currentTimeMillis()) {
+            if (msg.getCreationTime().getTime() + msg.getTtl() < System.currentTimeMillis()) {
                 return true;
             }
         }
         return false;
     }
 
-    private <T> ArrayList<T> copyArrayList(ArrayList<T> arrayList) {
-        ArrayList<T> newArrayList = new ArrayList<>(0);
-        for (T item : arrayList) {
-            newArrayList.add(item);
-        }
-        return newArrayList;
-    }
-
     private <T> ArrayList<T> joinArrayLists(ArrayList<T> listOne, ArrayList<T> listTwo) {
-        ArrayList<T> jointList = copyArrayList(listOne);
+        ArrayList<T> jointList = new ArrayList<>(listOne);
         for (T item : listTwo) {
             jointList.add(item);
         }

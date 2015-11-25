@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import java.util.ArrayList;
@@ -18,6 +20,9 @@ import unife.icedroid.utils.Settings;
 public class ICeDROIDActivity extends AppCompatActivity {
     private static final String TAG = "ICeDROIDActivity";
     private static final boolean DEBUG = true;
+
+    private ArrayAdapter<Subscription> adapter;
+    private ArrayList<Subscription> oldSubscriptionsList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +35,26 @@ public class ICeDROIDActivity extends AppCompatActivity {
 
         Settings s = Settings.getSettings(this);
         if (s == null) finish();
+        else {
+            oldSubscriptionsList = SubscriptionListManager.
+                                            getSubscriptionListManager().getSubscriptionsList();
+            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
+                                                                            oldSubscriptionsList);
+
+            ListView listView = (ListView) findViewById(R.id.subscritions_list);
+            listView.setAdapter(adapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Subscription subscription = adapter.getItem(position);
+                    Intent intent = new Intent(ICeDROIDActivity.this, ChatActivity.class);
+                    intent.putExtra(Subscription.EXTRA_SUBSCRIPTION, subscription);
+                    startActivity(intent);
+                }
+
+            });
+        }
     }
 
     @Override
@@ -56,13 +81,16 @@ public class ICeDROIDActivity extends AppCompatActivity {
         super.onStart();
 
         ArrayList<Subscription> subscriptionsList = SubscriptionListManager.
-                                            getSubscriptionListManager().getSubscriptionsList();
-        ArrayAdapter<Subscription> adapter = new ArrayAdapter<>(this,
-                                                    android.R.layout.simple_list_item_1,
-                                                    subscriptionsList);
+                getSubscriptionListManager().getSubscriptionsList();
 
-        ListView listView = (ListView) findViewById(R.id.subscritions_list);
-        listView.setAdapter(adapter);
+        for (Subscription subscription : subscriptionsList) {
+            if (!oldSubscriptionsList.contains(subscription)) {
+                adapter.add(subscription);
+            }
+        }
+
+        oldSubscriptionsList = subscriptionsList;
+
     }
 
     @Override

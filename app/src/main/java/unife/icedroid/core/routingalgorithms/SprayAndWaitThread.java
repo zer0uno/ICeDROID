@@ -84,7 +84,7 @@ public class SprayAndWaitThread implements Runnable {
 
     private boolean isExpired(Message msg) {
         if (msg.getTtl() != Message.INFINITE_TTL) {
-            if (msg.getCreationTime().getTime() + msg.getTtl() >= System.currentTimeMillis()) {
+            if (msg.getCreationTime().getTime() + msg.getTtl() < System.currentTimeMillis()) {
                 return true;
             }
         }
