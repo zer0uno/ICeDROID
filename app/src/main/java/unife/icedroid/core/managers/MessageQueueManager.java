@@ -187,11 +187,16 @@ public class MessageQueueManager {
 
                 message = forwardingMessages.get(indexForwardingMessages);
 
-                if (isExpired(message)) {
+                //Hellomessages must be sent just once
+                if (message.getTypeOfMessage().equals(HelloMessage.HELLO_MESSAGE)) {
                     forwardingMessages.remove(indexForwardingMessages);
-                    message = null;
                 } else {
-                    indexForwardingMessages++;
+                    if (isExpired(message)) {
+                        forwardingMessages.remove(indexForwardingMessages);
+                        message = null;
+                    } else {
+                        indexForwardingMessages++;
+                    }
                 }
             }
         }
