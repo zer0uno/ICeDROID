@@ -1,19 +1,14 @@
-package unife.icedroid.core.managers;
+package unife.icedroid;
 
 import android.content.Context;
 import android.util.Log;
-import unife.icedroid.core.RegularMessage;
-import unife.icedroid.core.Subscription;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import unife.icedroid.core.ICeDROID;
 
 public class SubscriptionListManager {
-    /**
-     * TODO
-     * Ritornare sempre delle copie
-    */
     private static final String TAG = "SubscriptionListManager";
     private static final boolean DEBUG = true;
 
@@ -29,7 +24,7 @@ public class SubscriptionListManager {
         subscriptionsList = new ArrayList<>(0);
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(
-                                               context.openFileInput(subscriptionsFileName)));
+                                                    context.openFileInput(subscriptionsFileName)));
 
             Subscription subscription;
             String subscriptionLine;
@@ -59,39 +54,50 @@ public class SubscriptionListManager {
         return instance;
     }
 
-    public synchronized void subscribe(Subscription subscription) {
+    public synchronized Subscription subscribe(String channel, String group) {
+        Subscription subscription = new Subscription(channel, group);
         if (!subscriptionsList.contains(subscription)) {
             subscriptionsList.add(subscription);
+
+            ICeDROID.getInstance().subscribe(channel);
+
             try {
                 FileOutputStream fos = context.openFileOutput(subscriptionsFileName,
                         Context.MODE_PRIVATE | Context.MODE_APPEND);
                 fos.write((subscription.toString() + "\n").getBytes());
                 fos.close();
+
+                //Create conversation file
                 fos = context.openFileOutput(subscription.toString(), Context.MODE_PRIVATE);
                 fos.close();
+
                 if (DEBUG) Log.i(TAG, "Subscribing to: " + subscription.toString());
             } catch (Exception ex) {
                 String msg = ex.getMessage();
                 if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error subscribing");
             }
         }
+        return subscription;
     }
 
     public synchronized ArrayList<Subscription> getSubscriptionsList() {
-        return subscriptionsList;
+        return new ArrayList<>(subscriptionsList);
     }
 
-    public synchronized boolean isSubscribedToMessage(RegularMessage msg) {
-        return subscriptionsList.contains(msg.getSubscription());
+    public synchronized boolean isSubscribedToMessage(TxtMessage msg) {
+        Subscription subscription = new Subscription(msg.getChannel(), msg.getGroup());
+        return subscriptionsList.contains(subscription);
     }
 
-    public synchronized boolean isSubscribedToChannel(RegularMessage msg) {
-        for (Subscription sub : subscriptionsList) {
-            if (sub.getChannelID().equals(msg.getSubscription().getChannelID())) {
-                return true;
+    public synchronized ArrayList<Subscription> getNewSubscriptions(
+                                                        ArrayList<Subscription> oldSubscriptions) {
+        ArrayList<Subscription> newSubscriptions = new ArrayList<>(0);
+        for (Subscription s : getSubscriptionsList()) {
+            if (!oldSubscriptions.contains(s)) {
+                newSubscriptions.add(s);
             }
         }
-        return false;
+        return newSubscriptions;
     }
 
 }

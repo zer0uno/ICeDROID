@@ -1,6 +1,6 @@
 package unife.icedroid.core.messagecachingstrategies;
 
-import unife.icedroid.core.RegularMessage;
+import unife.icedroid.core.ICeDROIDMessage;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -14,7 +14,7 @@ public class RANDOMStrategy extends MessageCachingStrategy {
     }
 
     @Override
-    public void add(ArrayList<RegularMessage> list, RegularMessage msg) {
+    public void add(ArrayList<ICeDROIDMessage> list, ICeDROIDMessage msg) {
         int msgSize = msg.getSize();
         Random random = new Random(System.currentTimeMillis());
         int index;

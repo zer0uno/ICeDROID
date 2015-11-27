@@ -10,7 +10,7 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.widget.Toast;
 import unife.icedroid.R;
-import unife.icedroid.core.managers.SubscriptionListManager;
+import unife.icedroid.core.managers.ChannelListManager;
 import unife.icedroid.exceptions.ImpossibleToGetIPAddress;
 import unife.icedroid.services.BroadcastReceiveService;
 import unife.icedroid.services.BroadcastSendService;
@@ -21,13 +21,7 @@ import java.util.Random;
 import java.io.BufferedReader;
 
 public class Settings {
-    /**
-     * TODO
-     * Attenzione, che qualcuno possa avere una versione vecchia dei settings,
-     * mai memorizzare l'oggetto ritornato, cioè mai fare Settings s = Settings.getSettings(),
-     * ma sempre utilizzare solo Settings.getSettings()
-    */
-    private static final String TAG = "Settings";
+    private static final String TAG = "ICeDROID Settings";
     private static final boolean DEBUG = true;
 
     public static enum RoutingAlgorithm {SPRAY_AND_WAIT}
@@ -55,7 +49,7 @@ public class Settings {
     private WifiManager.WifiLock wifiLock;
 
     private Settings(Context context) throws Exception {
-        this.context = context;
+        this.context = context.getApplicationContext();
         Resources resources = context.getResources();
         BufferedReader br = new BufferedReader(new InputStreamReader(
                 resources.openRawResource(R.raw.settings)));
@@ -181,7 +175,7 @@ public class Settings {
         /**************************************/
         /** Setting up subscriptions Manager **/
         /**************************************/
-        SubscriptionListManager.getSubscriptionListManager(context);
+        ChannelListManager.getSubscriptionListManager(context);
 
         /*******************************************/
         /** Starting various services for the app **/
@@ -228,7 +222,7 @@ public class Settings {
                         instance.startServices();
                     } catch (Exception ex) {
                         String msg = ex.getMessage();
-                        if (DEBUG) Log.e(TAG, "Error loading settings!");
+                        if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error loading settings!");
                         if (instance != null) instance.close();
                     }
                 }

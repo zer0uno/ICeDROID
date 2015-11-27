@@ -2,8 +2,8 @@ package unife.icedroid.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import unife.icedroid.core.ICeDROIDMessage;
 import unife.icedroid.core.NeighborInfo;
-import unife.icedroid.core.RegularMessage;
 import unife.icedroid.core.managers.*;
 import unife.icedroid.utils.Settings;
 import java.util.ArrayList;
@@ -18,8 +18,9 @@ public class ApplevDisseminationChannelService extends IntentService {
     public static final double FORWARD_PROBABILITY = 0.3;
 
     private MessageQueueManager messageQueueManager;
-    private SubscriptionListManager subscriptionListManager;
+    private ChannelListManager channelListManager;
     private NeighborhoodManager neighborhoodManager;
+    private OnMessageReceiveListener onMessageReceiveListener;
 
 
     public ApplevDisseminationChannelService() {
@@ -27,26 +28,27 @@ public class ApplevDisseminationChannelService extends IntentService {
         setIntentRedelivery(true);
 
         messageQueueManager = MessageQueueManager.getMessageQueueManager();
-        subscriptionListManager = SubscriptionListManager.getSubscriptionListManager();
+        channelListManager = ChannelListManager.getChannelListManager();
         neighborhoodManager = NeighborhoodManager.getNeighborhoodManager();
+        onMessageReceiveListener = unife.icedroid.Settings.getSettings().getListener();
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        RegularMessage regularMessage =
-                                (RegularMessage) intent.getSerializableExtra(EXTRA_ADC_MESSAGE);
+        ICeDROIDMessage iceMessage =
+                                (ICeDROIDMessage) intent.getSerializableExtra(EXTRA_ADC_MESSAGE);
 
         //There's a new regular message, first it must be decided whether to cache or not
         //and following whether to forward it or not
-        if (regularMessage != null) {
+        if (iceMessage != null) {
             //This host's messages
-            if (regularMessage.getHostID().equals(Settings.getSettings().getHostID())) {
+            if (iceMessage.getHostID().equals(Settings.getSettings().getHostID())) {
                 switch (Settings.getSettings().getRoutingAlgorithm()) {
                     case SPRAY_AND_WAIT:
-                        messageQueueManager.removeMessageFromForwardingMessages(regularMessage);
-                        messageQueueManager.removeMessageFromCachedMessages(regularMessage);
-                        forwardMessage(regularMessage, true);
-                        messageQueueManager.addToCache(regularMessage);
+                        messageQueueManager.removeMessageFromForwardingMessages(iceMessage);
+                        messageQueueManager.removeMessageFromCachedMessages(iceMessage);
+                        forwardMessage(iceMessage, true);
+                        messageQueueManager.addToCache(iceMessage);
                         break;
                     default:
                         break;
@@ -56,21 +58,20 @@ public class ApplevDisseminationChannelService extends IntentService {
                 //Other hosts' messages
                 boolean toCache = true;
 
-                if (!messageQueueManager.isCached(regularMessage) &&
-                        !messageQueueManager.isDiscarded(regularMessage)) {
+                if (!messageQueueManager.isCached(iceMessage) &&
+                        !messageQueueManager.isDiscarded(iceMessage)) {
 
-                    if (subscriptionListManager.isSubscribedToMessage(regularMessage)) {
-                        ChatsManager.saveMessageInConversation(getFilesDir().getAbsolutePath(),
-                                regularMessage);
-                    } else if (!subscriptionListManager.isSubscribedToChannel(regularMessage)) {
+                    if (channelListManager.isSubscribedToChannel(iceMessage)) {
+                        onMessageReceiveListener.receive(iceMessage);
+                    } else {
                         switch (Settings.getSettings().getRoutingAlgorithm()) {
                             case SPRAY_AND_WAIT:
-                                Integer L = regularMessage.getProperty("L");
+                                Integer L = iceMessage.getProperty("L");
                                 if (L == null || L <= 0) {
                                     Random random = new Random(System.currentTimeMillis());
                                     if (random.nextDouble() > CACHING_PROBABILITY) {
                                         toCache = false;
-                                        messageQueueManager.addToDiscarded(regularMessage);
+                                        messageQueueManager.addToDiscarded(iceMessage);
                                     }
                                 }
                                 break;
@@ -80,8 +81,8 @@ public class ApplevDisseminationChannelService extends IntentService {
                     }
 
                     if (toCache) {
-                        messageQueueManager.addToCache(regularMessage);
-                        forwardMessage(regularMessage, false);
+                        messageQueueManager.addToCache(iceMessage);
+                        forwardMessage(iceMessage, false);
                     }
                 }
             }
@@ -94,11 +95,11 @@ public class ApplevDisseminationChannelService extends IntentService {
                             intent.getBooleanExtra(NeighborInfo.EXTRA_NEW_NEIGHBOR, false);
 
             if(newNeighbor) {
-                messageQueueManager.removeRegularMessagesFromForwardingMessages();
-                ArrayList<RegularMessage> cachedMessages = messageQueueManager.getCachedMessages();
+                messageQueueManager.removeICeDROIDMessagesFromForwardingMessages();
+                ArrayList<ICeDROIDMessage> cachedMessages = messageQueueManager.getCachedMessages();
 
                 synchronized (cachedMessages) {
-                    for (RegularMessage msg : cachedMessages) {
+                    for (ICeDROIDMessage msg : cachedMessages) {
                         forwardMessage(msg, false);
                     }
                 }
@@ -107,15 +108,13 @@ public class ApplevDisseminationChannelService extends IntentService {
 
     }
 
-    private void forwardMessage(RegularMessage msg, boolean thisHostMessage) {
+    private void forwardMessage(ICeDROIDMessage msg, boolean thisHostMessage) {
         boolean send = false;
         switch (Settings.getSettings().getRoutingAlgorithm()) {
             case SPRAY_AND_WAIT:
                 //If the message is new from this host
                 if (thisHostMessage) {
-                    if (neighborhoodManager.isThereNeighborInterestedToMessage(msg)) {
-                        send = true;
-                    } else if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
+                    if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
                         send = true;
                     } else /*if (neighborhoodManager.isThereNeighborWithoutThisMessage(msg))*/ {
                         Random random = new Random(System.currentTimeMillis());
@@ -127,7 +126,7 @@ public class ApplevDisseminationChannelService extends IntentService {
                     //If we are not in the spraying phase or the message is not new,
                     //then according to the Spray and Wait Algorithm the message must be
                     //delivered only if there is a direct interested neighbor.
-                    if (neighborhoodManager.isThereNeighborInterestedToMessage(msg)) {
+                    if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
                         send = true;
                     }
                 }
@@ -141,5 +140,9 @@ public class ApplevDisseminationChannelService extends IntentService {
             messageQueueManager.addToForwardingMessages(msg);
         }
 
+    }
+
+    public interface OnMessageReceiveListener {
+        public void receive(ICeDROIDMessage message);
     }
 }

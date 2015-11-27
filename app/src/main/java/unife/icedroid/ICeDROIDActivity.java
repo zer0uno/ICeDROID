@@ -13,16 +13,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import java.util.ArrayList;
-import unife.icedroid.core.Subscription;
-import unife.icedroid.core.managers.SubscriptionListManager;
-import unife.icedroid.utils.Settings;
 
 public class ICeDROIDActivity extends AppCompatActivity {
     private static final String TAG = "ICeDROIDActivity";
     private static final boolean DEBUG = true;
 
     private ArrayAdapter<Subscription> adapter;
-    private ArrayList<Subscription> oldSubscriptionsList;
+    private ArrayList<Subscription> oldSubscriptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +33,11 @@ public class ICeDROIDActivity extends AppCompatActivity {
         Settings s = Settings.getSettings(this);
         if (s == null) finish();
         else {
-            oldSubscriptionsList = SubscriptionListManager.
-                                            getSubscriptionListManager().getSubscriptionsList();
+
+            oldSubscriptions = SubscriptionListManager.getSubscriptionListManager().
+                                                                        getSubscriptionsList();
             adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
-                                                                            oldSubscriptionsList);
+                                                                            oldSubscriptions);
 
             ListView listView = (ListView) findViewById(R.id.subscritions_list);
             listView.setAdapter(adapter);
@@ -80,16 +78,14 @@ public class ICeDROIDActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        ArrayList<Subscription> subscriptionsList = SubscriptionListManager.
-                getSubscriptionListManager().getSubscriptionsList();
+        ArrayList<Subscription> newSubscriptions = SubscriptionListManager.
+                                getSubscriptionListManager().getNewSubscriptions(oldSubscriptions);
 
-        for (Subscription subscription : subscriptionsList) {
-            if (!oldSubscriptionsList.contains(subscription)) {
-                adapter.add(subscription);
-            }
+        for (Subscription s : newSubscriptions) {
+            adapter.add(s);
         }
 
-        oldSubscriptionsList = subscriptionsList;
+        oldSubscriptions.addAll(newSubscriptions);
 
     }
 

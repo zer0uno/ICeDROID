@@ -1,15 +1,15 @@
 package unife.icedroid.core.messageforwardingstrategies;
 
 import unife.icedroid.core.HelloMessage;
-import unife.icedroid.core.Message;
-import unife.icedroid.core.RegularMessage;
+import unife.icedroid.core.BaseMessage;
+import unife.icedroid.core.ICeDROIDMessage;
 
 import java.util.ArrayList;
 
 public class PRIORITYStrategy extends MessageForwardingStrategy {
 
     @Override
-    public void add(ArrayList<Message> list, Message msg, int indexForwardingMessages) {
+    public void add(ArrayList<BaseMessage> list, BaseMessage msg, int indexForwardingMessages) {
         if (msg.getTypeOfMessage().equals(HelloMessage.HELLO_MESSAGE)) {
             int helloMessageIndex = getHelloMessageIndex(list);
             if (helloMessageIndex != -1) {
@@ -18,17 +18,17 @@ public class PRIORITYStrategy extends MessageForwardingStrategy {
                 return;
             }
         } else {
-            RegularMessage regularMessage = (RegularMessage) msg;
-            if (regularMessage.getSubscription().getChannelID().equals("Sport")) {
+            ICeDROIDMessage regularMessage = (ICeDROIDMessage) msg;
+            if (regularMessage.getChannel().equals("Sport")) {
                 if (indexForwardingMessages >= list.size()) {
                     indexForwardingMessages = 0;
                 }
                 int i;
                 for (i = indexForwardingMessages; i < list.size(); i++) {
-                    Message m = list.get(i);
-                    if (m.getTypeOfMessage().equals(RegularMessage.REGULAR_MESSAGE)) {
-                        RegularMessage rm = (RegularMessage) m;
-                        if (!rm.getSubscription().getChannelID().equals("Sport")) {
+                    BaseMessage m = list.get(i);
+                    if (m.getTypeOfMessage().equals(ICeDROIDMessage.ICEDROID_MESSAGE)) {
+                        ICeDROIDMessage rm = (ICeDROIDMessage) m;
+                        if (!rm.getChannel().equals("Sport")) {
                             break;
                         }
                     }
@@ -42,7 +42,7 @@ public class PRIORITYStrategy extends MessageForwardingStrategy {
         list.add(msg);
     }
 
-    private int getHelloMessageIndex(ArrayList<Message> list) {
+    private int getHelloMessageIndex(ArrayList<BaseMessage> list) {
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getTypeOfMessage().equals(HelloMessage.HELLO_MESSAGE)) {
                 return i;

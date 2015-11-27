@@ -38,8 +38,8 @@ public class HelloMessageService extends Service {
                 String hostID = helloMessage.getHostID();
                 String hostUsername = helloMessage.getHostUsername();
                 Date lastTimeSeen = helloMessage.getReceptionTime();
-                ArrayList<Subscription> hostSubscription = helloMessage.getHostSubscriptions();
-                ArrayList<RegularMessage> cachedMessages = helloMessage.getCachedMessages();
+                ArrayList<String> hostSubscription = helloMessage.getHostChannels();
+                ArrayList<ICeDROIDMessage> cachedMessages = helloMessage.getCachedMessages();
                 NeighborInfo neighbor = new NeighborInfo(hostID, hostUsername, lastTimeSeen,
                         hostSubscription, cachedMessages);
                 boolean newNeighbor = NeighborhoodManager.getNeighborhoodManager().add(neighbor);
@@ -78,6 +78,11 @@ public class HelloMessageService extends Service {
         thread.start();
 
         handler = new HelloMessageHandler(thread.getLooper());
+
+        /***
+         * TODO
+         * se tutti hanno quel messaggio smetto di inviarlo
+         * */
     }
 
     @Override

@@ -1,7 +1,7 @@
 package unife.icedroid.core.messagecachingstrategies;
 
-import unife.icedroid.core.Message;
-import unife.icedroid.core.RegularMessage;
+import unife.icedroid.core.BaseMessage;
+import unife.icedroid.core.ICeDROIDMessage;
 import unife.icedroid.utils.Settings;
 import java.util.ArrayList;
 
@@ -19,12 +19,12 @@ public abstract class MessageCachingStrategy {
         }
     }
 
-    public abstract void add(ArrayList<RegularMessage> list, RegularMessage msg);
+    public abstract void add(ArrayList<ICeDROIDMessage> list, ICeDROIDMessage msg);
 
-    protected int getListSize(ArrayList<? extends Message> list) {
+    protected int getListSize(ArrayList<? extends BaseMessage> list) {
         int size = 0;
 
-        for (Message m : list) {
+        for (BaseMessage m : list) {
             size += m.getSize();
         }
         return size;

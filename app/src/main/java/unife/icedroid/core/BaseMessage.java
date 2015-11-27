@@ -7,8 +7,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Date;
 
-public class Message implements Serializable {
-    private static final String TAG = "Message";
+public abstract class BaseMessage implements Serializable {
+    private static final String TAG = "BaseMessage";
     private static final boolean DEBUG = true;
 
     public static final int INFINITE_TTL = -1;
@@ -27,7 +27,7 @@ public class Message implements Serializable {
     protected int priority;
     protected int size;
 
-    public Message() {
+    public BaseMessage() {
         hostID = Settings.getSettings().getHostID();
         setMsgID();
         long time = System.currentTimeMillis();
@@ -35,6 +35,18 @@ public class Message implements Serializable {
         receptionTime = new Date(time);
     }
 
+    public BaseMessage(BaseMessage msg) {
+        typeOfMessage = msg.typeOfMessage;
+        hostID = msg.hostID;
+        hostUsername = msg.hostUsername;
+        msgID = msg.msgID;
+        creationTime = msg.creationTime;
+        receptionTime = msg.receptionTime;
+        ttl = msg.ttl;
+        priority = msg.priority;
+        size = msg.size;
+
+    }
 
     public String getTypeOfMessage() {
         return typeOfMessage;
@@ -111,7 +123,7 @@ public class Message implements Serializable {
 
     @Override
     public boolean equals(Object object) {
-        Message msg = (Message) object;
+        BaseMessage msg = (BaseMessage) object;
         return (typeOfMessage.equals(msg.typeOfMessage) &&
                 hostID.equals(msg.hostID) &&
                 (msgID == msg.msgID));
@@ -141,7 +153,8 @@ public class Message implements Serializable {
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
             objectOutputStream.writeObject(this);
         } catch (Exception ex) {
-            if (DEBUG) Log.e(TAG, "Error getting size of the message");
+            String msg = ex.getMessage();
+            if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error getting size of the message");
         }
         return byteArrayOutputStream.toByteArray().length;
     }

@@ -1,6 +1,6 @@
 package unife.icedroid.core.messageforwardingstrategies;
 
-import unife.icedroid.core.Message;
+import unife.icedroid.core.BaseMessage;
 import unife.icedroid.utils.Settings;
 import java.util.ArrayList;
 
@@ -17,5 +17,5 @@ public abstract class MessageForwardingStrategy {
         }
     }
 
-    public abstract void add(ArrayList<Message> list, Message msg, int index);
+    public abstract void add(ArrayList<BaseMessage> list, BaseMessage msg, int index);
 }

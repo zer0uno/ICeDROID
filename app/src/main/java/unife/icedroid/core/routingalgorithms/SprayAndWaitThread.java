@@ -3,9 +3,9 @@ package unife.icedroid.core.routingalgorithms;
 import android.app.Service;
 import android.content.Intent;
 import android.util.Log;
-import unife.icedroid.core.Message;
+import unife.icedroid.core.BaseMessage;
 import unife.icedroid.core.NeighborInfo;
-import unife.icedroid.core.RegularMessage;
+import unife.icedroid.core.ICeDROIDMessage;
 import unife.icedroid.core.managers.MessageQueueManager;
 import unife.icedroid.core.managers.NeighborhoodManager;
 import unife.icedroid.services.ApplevDisseminationChannelService;
@@ -17,9 +17,9 @@ public class SprayAndWaitThread implements Runnable {
 
     private Service service;
     private int startID;
-    private RegularMessage message;
+    private ICeDROIDMessage message;
 
-    public SprayAndWaitThread(Service service, int startID, RegularMessage msg) {
+    public SprayAndWaitThread(Service service, int startID, ICeDROIDMessage msg) {
         this.service = service;
         this.startID = startID;
         message = msg;
@@ -55,7 +55,7 @@ public class SprayAndWaitThread implements Runnable {
                 }
             }
             if (L > 0) {
-                if (neighborhoodManager.isThereNeighborInterestedToMessage(message)) {
+                if (neighborhoodManager.isThereNeighborSubscribedToChannel(message)) {
                     message.setProperty("L", 0);
                     intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE, message);
                     service.startService(intent);
@@ -68,8 +68,7 @@ public class SprayAndWaitThread implements Runnable {
                         service.startService(intent);
                     }
                 }
-                neighborhoodManager.isThereAnUpdate(lastUpdate);
-                lastUpdate = neighborhoodManager.getLastUpdate();
+                lastUpdate = neighborhoodManager.isThereAnUpdate(lastUpdate);
             }
         }
 
@@ -82,8 +81,8 @@ public class SprayAndWaitThread implements Runnable {
         service.stopSelf(startID);
     }
 
-    private boolean isExpired(Message msg) {
-        if (msg.getTtl() != Message.INFINITE_TTL) {
+    private boolean isExpired(BaseMessage msg) {
+        if (msg.getTtl() != BaseMessage.INFINITE_TTL) {
             if (msg.getCreationTime().getTime() + msg.getTtl() < System.currentTimeMillis()) {
                 return true;
             }

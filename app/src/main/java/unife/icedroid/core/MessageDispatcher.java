@@ -24,19 +24,21 @@ public class MessageDispatcher {
 
             try {
                 ObjectInputStream rawMessage = new ObjectInputStream(byteArrayInputStream);
-                Message message = (Message) rawMessage.readObject();
+                BaseMessage message = (BaseMessage) rawMessage.readObject();
 
-                //Broadcast messages are also delivered to whom generated the message
+                //Broadcast messages are also delivered to whom generated the message,
+                //need to avoid it
                 if (!message.getHostID().equals(s.getHostID())) {
                     if (DEBUG) Log.i(TAG, "Received a message" + message);
+
                     //Set message reception time
                     message.setReceptionTime(new Date(System.currentTimeMillis()));
 
                     Intent intent;
-                    if (message.getTypeOfMessage().equals("regular")) {
+                    if (message.getTypeOfMessage().equals(ICeDROIDMessage.ICEDROID_MESSAGE)) {
                         intent = new Intent(context, ApplevDisseminationChannelService.class);
                         intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
-                                        message);
+                                                                                        message);
                     } else {
                         intent = new Intent(context, HelloMessageService.class);
                         intent.putExtra(HelloMessage.EXTRA_HELLO_MESSAGE, message);

@@ -14,19 +14,21 @@ public class BroadcastSendThread implements Runnable {
     private static final String TAG = "BroadcastSendThread";
     private static final boolean DEBUG = true;
 
-    private Settings s;
     private MessageQueueManager messageQueueManager;
     private DatagramSocket socket;
+    private String networkBroadcastAddress;
+    private int recvPort;
 
 
     public BroadcastSendThread(Settings s) {
-        this.s = s;
         messageQueueManager = MessageQueueManager.getMessageQueueManager();
         if (s != null) {
             try {
                 InetAddress localHost = InetAddress.getByName(s.getHostIP());
                 socket = new DatagramSocket(0, localHost);
                 socket.setBroadcast(true);
+                networkBroadcastAddress = s.getNetworkBroadcastAddress();
+                recvPort = s.getReceivePort();
             } catch (Exception ex) {
                 String msg = ex.getMessage();
                 if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Socket error");
@@ -39,16 +41,16 @@ public class BroadcastSendThread implements Runnable {
     public void run() {
         if (!Thread.interrupted()) {
             try {
-                InetAddress broadcastAddress = InetAddress.
-                                                        getByName(s.getNetworkBroadcastAddress());
-                Message message = null;
-                byte[] data = null;
+                InetAddress broadcastAddress = InetAddress.getByName(networkBroadcastAddress);
+                BaseMessage message;
+                byte[] data;
                 ByteArrayOutputStream byteArrayOutputStream;
                 ObjectOutputStream objectOutputStream;
-                DatagramPacket packet = null;
+                DatagramPacket packet;
 
                 while (true) {
                     if (DEBUG) Log.i(TAG, "Waiting for a message to send...");
+
                     message = messageQueueManager.getMessageToSend();
 
                     //Need to ger a byte representation of the message
@@ -64,14 +66,9 @@ public class BroadcastSendThread implements Runnable {
                                             "Impossible to convert to byte: " + message);
                     }
 
-                    /**
-                     *  TODO
-                     *  da rimuovere
-                    */
-                    //Thread.sleep(6000);
                     if (data != null) {
                         packet = new DatagramPacket(data, data.length,
-                                                            broadcastAddress, s.getReceivePort());
+                                                            broadcastAddress, recvPort);
                         socket.send(packet);
                         if (DEBUG) Log.i(TAG, "Message sent: " + message);
                     }

@@ -1,26 +1,22 @@
 package unife.icedroid.core.managers;
 
+import unife.icedroid.core.BaseMessage;
 import unife.icedroid.core.HelloMessage;
-import unife.icedroid.core.Message;
-import unife.icedroid.core.RegularMessage;
+import unife.icedroid.core.ICeDROIDMessage;
 import unife.icedroid.utils.Settings;
 import unife.icedroid.core.messagecachingstrategies.MessageCachingStrategy;
 import unife.icedroid.core.messageforwardingstrategies.MessageForwardingStrategy;
 import java.util.*;
 
 public class MessageQueueManager {
-    /**
-     * TODO
-     * Ritornare sempre delle copie
-     */
     private static final String TAG = "MessageQueueManager";
     private static final boolean DEBUG = true;
 
     private volatile static MessageQueueManager instance;
 
-    private ArrayList<RegularMessage> cachedMessages;
-    private ArrayList<RegularMessage> discardedMessages;
-    private ArrayList<Message> forwardingMessages;
+    private ArrayList<ICeDROIDMessage> cachedMessages;
+    private ArrayList<ICeDROIDMessage> discardedMessages;
+    private ArrayList<BaseMessage> forwardingMessages;
     private Timer cachedMessagesTimer;
     private Timer discardedMessagesTimer;
     private MessageCachingStrategy cachingStrategy;
@@ -53,27 +49,27 @@ public class MessageQueueManager {
         return instance;
     }
 
-    public boolean isCached(RegularMessage msg) {
+    public boolean isCached(ICeDROIDMessage msg) {
         synchronized (cachedMessages) {
             return cachedMessages.contains(msg);
         }
     }
 
     public
-    boolean isDiscarded(RegularMessage msg) {
+    boolean isDiscarded(ICeDROIDMessage msg) {
         synchronized (discardedMessages) {
             return discardedMessages.contains(msg);
         }
     }
 
-    public void addToCache(final RegularMessage msg) {
+    public void addToCache(final ICeDROIDMessage msg) {
         if (!isExpired(msg)) {
             synchronized (cachedMessages) {
                 cachingStrategy.add(cachedMessages, msg);
             }
 
             //If the msg TTL isn't infinite then set a timer to delete it.
-            if (msg.getTtl() != Message.INFINITE_TTL) {
+            if (msg.getTtl() != BaseMessage.INFINITE_TTL) {
                 cachedMessagesTimer.schedule(new TimerTask() {
 
                     @Override
@@ -86,16 +82,18 @@ public class MessageQueueManager {
         }
     }
 
-    public void addToDiscarded(final RegularMessage msg) {
-        if (!isExpired(msg)) {
+    public void addToDiscarded(ICeDROIDMessage iceMsg) {
+        if (!isExpired(iceMsg)) {
 
-            msg.setContentData(null);
+            //Remove payload (data)
+            final ICeDROIDMessage msg = new ICeDROIDMessage(iceMsg);
+
             synchronized (discardedMessages) {
                 discardedMessages.add(msg);
             }
 
             //If the msg TTL isn't infinite then set a timer to delete it.
-            if (msg.getTtl() != Message.INFINITE_TTL) {
+            if (msg.getTtl() != BaseMessage.INFINITE_TTL) {
                 discardedMessagesTimer.schedule(new TimerTask() {
 
                     @Override
@@ -108,52 +106,44 @@ public class MessageQueueManager {
         }
     }
 
-    public void addToForwardingMessages(Message msg) {
+    public void addToForwardingMessages(BaseMessage msg) {
         synchronized (forwardingMessages) {
             forwardingStrategy.add(forwardingMessages, msg, indexForwardingMessages);
             forwardingMessages.notifyAll();
         }
     }
 
-    public ArrayList<RegularMessage> getCachedMessages() {
+    public ArrayList<ICeDROIDMessage> getCachedMessages() {
         synchronized (cachedMessages) {
             return new ArrayList(cachedMessages);
         }
     }
 
-    public ArrayList<RegularMessage> getDiscardedMessages() {
+    public ArrayList<ICeDROIDMessage> getDiscardedMessages() {
         synchronized (discardedMessages) {
             return new ArrayList<>(discardedMessages);
         }
     }
 
-    public ArrayList<RegularMessage> getCachedAndDiscardedMessages() {
-        synchronized (cachedMessages) {
-            synchronized (discardedMessages) {
-                return joinArrayLists(cachedMessages, discardedMessages);
-            }
-        }
-    }
-
-    public void removeFromQueue(ArrayList<?> queue, Message msg) {
+    public void removeFromQueue(ArrayList<?> queue, BaseMessage msg) {
         synchronized (queue) {
             queue.remove(msg);
         }
     }
 
-    public void removeMessageFromCachedMessages(RegularMessage msg) {
+    public void removeMessageFromCachedMessages(ICeDROIDMessage msg) {
         removeFromQueue(cachedMessages, msg);
     }
 
-    public void removeMessageFromForwardingMessages(Message msg) {
+    public void removeMessageFromForwardingMessages(BaseMessage msg) {
        removeFromQueue(forwardingMessages, msg);
     }
 
-    public void removeRegularMessagesFromForwardingMessages() {
+    public void removeICeDROIDMessagesFromForwardingMessages() {
         synchronized (forwardingMessages) {
-            Message helloMessage = null;
+            BaseMessage helloMessage = null;
             //Save the hello message, if it is present
-            for (Message msg : forwardingMessages) {
+            for (BaseMessage msg : forwardingMessages) {
                 if (msg.getTypeOfMessage().equals(HelloMessage.HELLO_MESSAGE)) {
                     helloMessage = msg;
                     break;
@@ -168,9 +158,8 @@ public class MessageQueueManager {
         }
     }
 
-    public Message getMessageToSend() throws InterruptedException {
-        Settings s = Settings.getSettings();
-        Message message = null;
+    public BaseMessage getMessageToSend() throws InterruptedException {
+        BaseMessage message = null;
         synchronized (forwardingMessages) {
             while (message == null) {
                 while (forwardingMessages.size() == 0) {
@@ -203,21 +192,12 @@ public class MessageQueueManager {
         return message;
     }
 
-    private boolean isExpired(Message msg) {
-        if (msg.getTtl() != Message.INFINITE_TTL) {
+    private boolean isExpired(BaseMessage msg) {
+        if (msg.getTtl() != BaseMessage.INFINITE_TTL) {
             if (msg.getCreationTime().getTime() + msg.getTtl() < System.currentTimeMillis()) {
                 return true;
             }
         }
         return false;
     }
-
-    private <T> ArrayList<T> joinArrayLists(ArrayList<T> listOne, ArrayList<T> listTwo) {
-        ArrayList<T> jointList = new ArrayList<>(listOne);
-        for (T item : listTwo) {
-            jointList.add(item);
-        }
-        return jointList;
-    }
-
 }

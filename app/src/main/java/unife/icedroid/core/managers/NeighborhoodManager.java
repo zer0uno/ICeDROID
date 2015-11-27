@@ -1,20 +1,17 @@
 package unife.icedroid.core.managers;
 
 import unife.icedroid.core.NeighborInfo;
-import unife.icedroid.core.RegularMessage;
-import unife.icedroid.core.Subscription;
+import unife.icedroid.core.ICeDROIDMessage;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class NeighborhoodManager {
-    /**
-     * TODO
-     * Ritornare sempre delle copie
-     */
+    private static final String TAG = "NeighborhoodManager";
+
     private volatile static NeighborhoodManager instance;
-    private static long ttlOfNeighbor = 35*1000;
+    private static long ttlOfNeighbor = 15*1000;
 
     private ArrayList<NeighborInfo> neighborsList;
     private Timer neighborhoodManagerTimer;
@@ -42,6 +39,7 @@ public class NeighborhoodManager {
         int index = isNeighborPresent(neighbor);
 
         if (index != -1) {
+            neighborsList.remove(index);
             neighborsList.add(index, neighbor);
         } else {
             neighborsList.add(neighbor);
@@ -60,31 +58,20 @@ public class NeighborhoodManager {
     }
 
     public synchronized void remove(NeighborInfo neighbor) {
-        neighborsList.remove(neighbor);
+        if (System.currentTimeMillis() > neighbor.getLastTimeSeen().getTime() + ttlOfNeighbor) {
+            neighborsList.remove(neighbor);
+        }
     }
 
     public synchronized int getNumberOfNeighbors() {
         return neighborsList.size();
     }
 
-    public synchronized boolean isThereNeighborInterestedToMessage(RegularMessage msg) {
-        Subscription subscription = msg.getSubscription();
-        for (NeighborInfo neighbor : neighborsList) {
-            //The neighbor must be subscribed to the same subscription and must not have
-            //the message in its own cache
-            if (neighbor.getHostSubscriptions().contains(subscription) &&
-                !neighbor.getCachedMessages().contains(msg)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public synchronized boolean isThereNeighborNotInterestedToMessageAndNotCached(
-                                                                            RegularMessage msg) {
-        Subscription subscription = msg.getSubscription();
+                                                                            ICeDROIDMessage msg) {
+        String channel = msg.getChannel();
         for (NeighborInfo neighbor : neighborsList) {
-            if (!neighbor.getHostSubscriptions().contains(subscription) &&
+            if (!neighbor.getHostChannels().contains(channel) &&
                 !neighbor.getCachedMessages().contains(msg)) {
                 return true;
             }
@@ -92,8 +79,8 @@ public class NeighborhoodManager {
         return false;
     }
 
-    public synchronized boolean isThereNeighborSubscribedToChannel(RegularMessage msg) {
-        String channel = msg.getSubscription().getChannelID();
+    public synchronized boolean isThereNeighborSubscribedToChannel(ICeDROIDMessage msg) {
+        String channel = msg.getChannel();
         for (NeighborInfo neighbor : neighborsList) {
             if (neighbor.getHostChannels().contains(channel) &&
                     !neighbor.getCachedMessages().contains(msg)) {
@@ -103,15 +90,13 @@ public class NeighborhoodManager {
         return false;
     }
 
-    public synchronized boolean isThereNeighborWithoutThisMessage(RegularMessage msg) {
-        Subscription subscription = msg.getSubscription();
-        String channel = subscription.getChannelID();
+    public synchronized boolean isThereNeighborWithoutThisMessage(ICeDROIDMessage msg) {
+        String channel = msg.getChannel();
         //Is there a neighbor that isn't interested to this message, doesn't belong
         //to the same message channel and hasn't the message in its own cache?
         for (NeighborInfo neighbor : neighborsList) {
-            if (!neighbor.getHostSubscriptions().contains(subscription) &&
-                !neighbor.getHostChannels().contains(channel) &&
-                !neighbor.getCachedMessages().contains(msg)) {
+            if (!neighbor.getHostChannels().contains(channel) &&
+                    !neighbor.getCachedMessages().contains(msg)) {
                 return true;
             }
         }
@@ -119,11 +104,11 @@ public class NeighborhoodManager {
     }
 
     public synchronized ArrayList<NeighborInfo> whoHasThisMessageButNotInterested(
-                                                                            RegularMessage msg) {
+                                                                            ICeDROIDMessage msg) {
         ArrayList<NeighborInfo> neighbors = new ArrayList<>(0);
-        Subscription subscription = msg.getSubscription();
+        String channel = msg.getChannel();
         for (NeighborInfo neighbor : neighborsList) {
-            if (!neighbor.getHostSubscriptions().contains(subscription)) {
+            if (!neighbor.getHostChannels().contains(channel)) {
                 if (neighbor.getCachedMessages().contains(msg)) {
                     neighbors.add(neighbor);
                 }
@@ -132,13 +117,14 @@ public class NeighborhoodManager {
         return neighbors;
     }
 
-    public void isThereAnUpdate(long time) {
+    public long isThereAnUpdate(long time) {
         synchronized (neighborsList) {
             try {
                 while (time == lastUpdate) {
                     neighborsList.wait();
                 }
             } catch (Exception ex) {}
+            return lastUpdate;
         }
     }
 

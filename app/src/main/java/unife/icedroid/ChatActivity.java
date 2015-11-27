@@ -17,17 +17,14 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.os.FileObserver;
 import android.util.Log;
-import unife.icedroid.core.RegularMessage;
-import unife.icedroid.core.Subscription;
-import unife.icedroid.core.managers.ChatsManager;
+
+import unife.icedroid.core.ICeDROID;
 import unife.icedroid.services.RoutingService;
-import unife.icedroid.utils.Settings;
 
 public class ChatActivity extends AppCompatActivity
                         implements LoaderManager.LoaderCallbacks<ArrayList<String>> {
     private static final String TAG = "ChatActivity";
     private static final boolean DEBUG = true;
-
 
     private Subscription subscription;
 
@@ -38,20 +35,20 @@ public class ChatActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent intent = getIntent();
+        subscription =
+                (Subscription) intent.getSerializableExtra(Subscription.EXTRA_SUBSCRIPTION);
+
         setContentView(R.layout.chat);
+        //Setting action bar
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(subscription.toString());
+        setSupportActionBar(toolbar);
 
         Settings s = Settings.getSettings(this);
         if (s == null) finish();
         else {
-
-            Intent intent = getIntent();
-            subscription =
-                        (Subscription) intent.getSerializableExtra(Subscription.EXTRA_SUBSCRIPTION);
-
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-            toolbar.setTitle(subscription.toString());
-            setSupportActionBar(toolbar);
-
             getSupportLoaderManager().initLoader(0, null, this);
 
             messages = loadMessages();
@@ -68,12 +65,10 @@ public class ChatActivity extends AppCompatActivity
         if (!txt.equals("")) {
             editText.setText(null);
 
-            RegularMessage message = new RegularMessage(subscription, txt);
-            ChatsManager.saveMessageInConversation(getFilesDir().getAbsolutePath(), message);
+            TxtMessage message = new TxtMessage(subscription, txt);
+            ChatsManager.getInstance().saveMessageInConversation(message);
 
-            Intent intent = new Intent(this, RoutingService.class);
-            intent.putExtra(RoutingService.EXTRA_NEW_MESSAGE, message);
-            startService(intent);
+            ICeDROID.getInstance().send(message);
         }
     }
 

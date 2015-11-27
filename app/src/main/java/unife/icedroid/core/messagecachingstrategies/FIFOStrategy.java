@@ -1,6 +1,6 @@
 package unife.icedroid.core.messagecachingstrategies;
 
-import unife.icedroid.core.RegularMessage;
+import unife.icedroid.core.ICeDROIDMessage;
 import java.util.ArrayList;
 
 public class FIFOStrategy extends MessageCachingStrategy {
@@ -13,7 +13,7 @@ public class FIFOStrategy extends MessageCachingStrategy {
     }
 
     @Override
-    public void add(ArrayList<RegularMessage> list, RegularMessage msg) {
+    public void add(ArrayList<ICeDROIDMessage> list, ICeDROIDMessage msg) {
         int msgSize = msg.getSize();
         while (getListSize(list) + msgSize > cacheSize) {
             list.remove(0);
