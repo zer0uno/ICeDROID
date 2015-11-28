@@ -11,40 +11,34 @@ public class NICManager {
 
     public static void startWifiAdhoc(Settings s) throws WifiAdhocImpossibleToEnable {
         try {
-            String cmd;
-            //Pull down Wifi interface
-            cmd = "iplink set " + s.getNetworkInterface() + " down";
-            Utils.rootExec(cmd);
+            //Check if the interface is already in adhoc state
+            if (!checkInterfaceStatus(s, "Mode:Ad-Hoc", "ESSID:\"" + s.getNetworkESSID() + "\"")) {
+                String cmd;
+                //Pull down Wifi interface
+                cmd = "iplink set " + s.getNetworkInterface() + " down";
+                Utils.rootExec(cmd);
 
-            //Set wifi ad-hoc mode
-            cmd = "iwconfig " + s.getNetworkInterface() + " mode ad-hoc channel " +
-                    s.getNetworkChannel() + " essid " + s.getNetworkESSID();
-            Utils.rootExec(cmd);
+                //Set wifi ad-hoc mode
+                cmd = "iwconfig " + s.getNetworkInterface() + " mode ad-hoc channel " +
+                        s.getNetworkChannel() + " essid " + s.getNetworkESSID();
+                Utils.rootExec(cmd);
 
-            //Pull up wifi interface
-            cmd = "iplink set " + s.getNetworkInterface() + " up";
-            Utils.rootExec(cmd);
+                //Pull up wifi interface
+                cmd = "iplink set " + s.getNetworkInterface() + " up";
+                Utils.rootExec(cmd);
 
-            //Set IP address and network settings
-            cmd = "ipaddr add " + s.getHostIP() + s.getNetworkMask() +
-                  " broadcast " + s.getNetworkBroadcastAddress() +
-                  " dev " + s.getNetworkInterface();
-            Utils.rootExec(cmd);
 
-            //Controls to check that the interface is on ad-hoc mode and on the right essid
-            cmd = "iwconfig " + s.getNetworkInterface();
-            ArrayList<String> results = Utils.exec(cmd);
-            if (!containsSubstring(results, "Mode:Ad-Hoc") || !containsSubstring(results,
-                    "ESSID:\"" + s.getNetworkESSID() + "\"")) {
-                throw new WifiAdhocImpossibleToEnable("Impossible to enable Wifi Ad-Hoc");
+
+                //Controls to check that the interface is on ad-hoc mode and on the right essid
+                if (!checkInterfaceStatus(s, "Mode:Ad-Hoc",
+                        "ESSID:\"" + s.getNetworkESSID() + "\"")) {
+                    throw new WifiAdhocImpossibleToEnable("Impossible to enable Wifi Ad-Hoc");
+                }
             }
-
-        } catch (Exception ex) {
+        } catch(Exception ex){
             String msg = ex.getMessage();
-            if (DEBUG) {
-                Log.e(TAG, (msg != null) ? msg :
-                        "startWifiAdhoc(): Impossible to enable Wifi Ad-Hoc");
-            }
+            if (DEBUG) Log.e(TAG, (msg != null) ? msg :
+                                            "startWifiAdhoc(): Impossible to enable Wifi Ad-Hoc");
             throw new WifiAdhocImpossibleToEnable("Impossible to enable Wifi Ad-Hoc");
         }
     }
@@ -64,10 +58,13 @@ public class NICManager {
             cmd = "iplink set " + s.getNetworkInterface() + " up";
             Utils.rootExec(cmd);
 
+            //Set IP address and network settings
+            s.getHostIP();
+
             //Controls to check that the interface is not on ad-hoc mode
             cmd = "iwconfig " + s.getNetworkInterface();
             ArrayList<String> results = Utils.exec(cmd);
-            if (containsSubstring(results, "Mode:Managed")) {
+            if (!checkInterfaceStatus(s, "Mode:Managed")) {
                 throw new WifiAdhocImpossibleToDisable("Impossible to disable Wifi Ad-Hoc");
             }
 
@@ -79,6 +76,20 @@ public class NICManager {
             }
             throw new WifiAdhocImpossibleToDisable("Impossible to disable Wifi Ad-Hoc");
         }
+    }
+
+    private static boolean checkInterfaceStatus(Settings s, String... fields) {
+        String cmd;
+        cmd = "iwconfig " + s.getNetworkInterface();
+        try {
+            ArrayList<String> results = Utils.exec(cmd);
+            for (String f : fields) {
+                if (!containsSubstring(results, f)) {
+                    return false;
+                }
+            }
+        } catch (Exception ex) {}
+        return true;
     }
 
     private static boolean containsSubstring (ArrayList<String> results, String substring) {

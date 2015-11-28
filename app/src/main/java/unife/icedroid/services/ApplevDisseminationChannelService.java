@@ -59,7 +59,8 @@ public class ApplevDisseminationChannelService extends IntentService {
                 boolean toCache = true;
 
                 if (!messageQueueManager.isCached(iceMessage) &&
-                        !messageQueueManager.isDiscarded(iceMessage)) {
+                    !messageQueueManager.isDiscarded(iceMessage) &&
+                    !messageQueueManager.isExpired(iceMessage)) {
 
                     if (channelListManager.isSubscribedToChannel(iceMessage)) {
                         onMessageReceiveListener.receive(iceMessage);

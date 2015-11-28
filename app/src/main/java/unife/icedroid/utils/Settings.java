@@ -16,7 +16,11 @@ import unife.icedroid.services.BroadcastReceiveService;
 import unife.icedroid.services.BroadcastSendService;
 import unife.icedroid.services.HelloMessageService;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.Inet4Address;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Random;
 import java.io.BufferedReader;
 
@@ -255,35 +259,59 @@ public class Settings {
 
     public String getHostIP() throws ImpossibleToGetIPAddress {
         if (hostIP == null) {
-            Random randGen = new Random(System.currentTimeMillis());
-            ArrayList<String> results = null;
-            int numOfPacks = 2;
-            String address = null;
-            int addrC;
-            int addrD;
-            String cmd = null;
-            boolean found = false;
-
             try {
-                while (!found) {
-                    addrC = randGen.nextInt(254) + 1;
-                    addrD = randGen.nextInt(254) + 1;
-                    address = "192.168." + addrC + "." + addrD;
-                    cmd = "arping -I " + networkInterface + " -D -c " + numOfPacks + " " + address;
-
-                    results = Utils.rootExec(cmd);
-                    if (results.remove(results.size() - 1).contains("Received 0 reply")) {
-                        found = true;
+                Enumeration<InetAddress> ias = NetworkInterface.getByName(networkInterface).
+                                                                                getInetAddresses();
+                InetAddress address;
+                while (ias.hasMoreElements()) {
+                    address = ias.nextElement();
+                    if (address instanceof Inet4Address) {
+                        hostIP = address.getHostAddress();
+                        break;
                     }
                 }
             } catch (Exception ex) {
-                String msg = ex.getMessage();
-                if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Impossible to get and address");
-                throw new ImpossibleToGetIPAddress("Impossible to get and address");
+                hostIP = null;
             }
 
-            if (DEBUG) Log.i(TAG, "Ip address set: " + address);
-            hostIP = address;
+            if (hostIP == null) {
+                Random randGen = new Random(System.currentTimeMillis());
+                ArrayList<String> results = null;
+                int numOfPacks = 2;
+                String address = null;
+                int addrC;
+                int addrD;
+                String cmd = null;
+                boolean found = false;
+
+                try {
+                    while (!found) {
+                        addrC = randGen.nextInt(254) + 1;
+                        addrD = randGen.nextInt(254) + 1;
+                        address = "192.168." + addrC + "." + addrD;
+                        cmd = "arping -I " + networkInterface + " -D -c " + numOfPacks + " " + address;
+
+                        results = Utils.rootExec(cmd);
+                        if (results.remove(results.size() - 1).contains("Received 0 reply")) {
+                            found = true;
+                        }
+                    }
+
+                    //Set IP address and network settings
+                    cmd = "ipaddr add " + address + networkMask +
+                            " broadcast " + networkBroadcastAddress +
+                            " dev " + networkInterface;
+                    Utils.rootExec(cmd);
+
+                } catch (Exception ex) {
+                    String msg = ex.getMessage();
+                    if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Impossible to get and address");
+                    throw new ImpossibleToGetIPAddress("Impossible to get and address");
+                }
+
+                if (DEBUG) Log.i(TAG, "Ip address set: " + address);
+                hostIP = address;
+            }
         }
         return hostIP;
     }

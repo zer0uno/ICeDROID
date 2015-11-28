@@ -34,27 +34,29 @@ public class NeighborhoodManager {
         return instance;
     }
 
-    public synchronized boolean add(NeighborInfo neighbor) {
-        boolean newNeighbor = false;
-        int index = isNeighborPresent(neighbor);
+    public boolean add(NeighborInfo neighbor) {
+        synchronized (neighborsList) {
+            boolean newNeighbor = false;
+            int index = isNeighborPresent(neighbor);
 
-        if (index != -1) {
-            neighborsList.remove(index);
-            neighborsList.add(index, neighbor);
-        } else {
-            neighborsList.add(neighbor);
-            newNeighbor = true;
+            if (index != -1) {
+                neighborsList.remove(index);
+                neighborsList.add(index, neighbor);
+            } else {
+                neighborsList.add(neighbor);
+                newNeighbor = true;
+            }
+
+            NeighborRemoveTask task = new NeighborRemoveTask(this, neighbor);
+            Date expirationTime = new Date(neighbor.getLastTimeSeen().getTime() + ttlOfNeighbor);
+            neighborhoodManagerTimer.schedule(task, expirationTime);
+
+            lastUpdate = System.currentTimeMillis();
+            //Notify that an update was done
+            neighborsList.notifyAll();
+
+            return newNeighbor;
         }
-
-        NeighborRemoveTask task = new NeighborRemoveTask(this, neighbor);
-        Date expirationTime = new Date(neighbor.getLastTimeSeen().getTime() + ttlOfNeighbor);
-        neighborhoodManagerTimer.schedule(task, expirationTime);
-
-        lastUpdate = System.currentTimeMillis();
-        //Notify that an update was done
-        neighborsList.notifyAll();
-
-        return newNeighbor;
     }
 
     public synchronized void remove(NeighborInfo neighbor) {

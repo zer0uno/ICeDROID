@@ -192,7 +192,7 @@ public class MessageQueueManager {
         return message;
     }
 
-    private boolean isExpired(BaseMessage msg) {
+    public boolean isExpired(BaseMessage msg) {
         if (msg.getTtl() != BaseMessage.INFINITE_TTL) {
             if (msg.getCreationTime().getTime() + msg.getTtl() < System.currentTimeMillis()) {
                 return true;
