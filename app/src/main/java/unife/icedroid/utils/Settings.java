@@ -147,7 +147,6 @@ public class Settings {
         /** Enabling wifi ad-hoc **/
         /**************************/
         wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-        if (hostID == null) hostID = wifiManager.getConnectionInfo().getMacAddress();
         wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_SCAN_ONLY, "WifiLock");
         wifiLock.acquire();
         wifiManager.setWifiEnabled(true);
@@ -156,6 +155,8 @@ public class Settings {
         while (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING) {
             Thread.sleep(1000);
         }
+
+        if (hostID == null) hostID = wifiManager.getConnectionInfo().getMacAddress();
 
         /**
          *  TODO

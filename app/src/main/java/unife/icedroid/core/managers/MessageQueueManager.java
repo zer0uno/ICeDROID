@@ -141,19 +141,11 @@ public class MessageQueueManager {
 
     public void removeICeDROIDMessagesFromForwardingMessages() {
         synchronized (forwardingMessages) {
-            BaseMessage helloMessage = null;
-            //Save the hello message, if it is present
-            for (BaseMessage msg : forwardingMessages) {
-                if (msg.getTypeOfMessage().equals(HelloMessage.HELLO_MESSAGE)) {
-                    helloMessage = msg;
-                    break;
-                }
-            }
 
-            forwardingMessages = new ArrayList<>(0);
-            //If there was an hello message then re-insert it
-            if (helloMessage != null) {
-                forwardingMessages.add(helloMessage);
+            for (BaseMessage m : forwardingMessages) {
+                if (m.getTypeOfMessage().equals(ICeDROIDMessage.ICEDROID_MESSAGE)) {
+                    forwardingMessages.remove(m);
+                }
             }
         }
     }
@@ -194,7 +186,10 @@ public class MessageQueueManager {
 
     public boolean isExpired(BaseMessage msg) {
         if (msg.getTtl() != BaseMessage.INFINITE_TTL) {
-            if (msg.getCreationTime().getTime() + msg.getTtl() < System.currentTimeMillis()) {
+            long x = System.currentTimeMillis();
+            long y = msg.getCreationTime().getTime();
+            long z  =msg.getTtl();
+            if (x > y + z) {
                 return true;
             }
         }

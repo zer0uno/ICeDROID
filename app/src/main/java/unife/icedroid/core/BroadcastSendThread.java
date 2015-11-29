@@ -79,5 +79,7 @@ public class BroadcastSendThread implements Runnable {
                 if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Closing BroadcastReceiveThread");
             }
         }
+
+        if (DEBUG) Log.e(TAG, "SEND thread is deading");
     }
 }

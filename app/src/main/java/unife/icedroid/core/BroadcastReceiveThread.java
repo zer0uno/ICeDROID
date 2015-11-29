@@ -28,6 +28,7 @@ public class BroadcastReceiveThread implements Runnable {
                 DatagramPacket packet = null;
                 byte[] data = null;
                 while (true) {
+                    if (DEBUG) Log.i(TAG, "Receiving a raw message...");
                     data = new byte[s.getMessageSize()];
                     packet = new DatagramPacket(data, data.length);
                     socket.receive(packet);
@@ -39,5 +40,6 @@ public class BroadcastReceiveThread implements Runnable {
                 if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error in BroadcastReceiveThread");
             }
         }
+        if (DEBUG) Log.e(TAG, "RECEIVE thread is deading");
     }
 }
