@@ -49,8 +49,6 @@ public class BroadcastSendThread implements Runnable {
                 DatagramPacket packet;
 
                 while (true) {
-                    if (DEBUG) Log.i(TAG, "Waiting for a message to send...");
-
                     message = messageQueueManager.getMessageToSend();
 
                     //Need to ger a byte representation of the message

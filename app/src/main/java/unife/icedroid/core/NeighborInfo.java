@@ -1,10 +1,12 @@
 package unife.icedroid.core;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 public class NeighborInfo {
     public static final String EXTRA_NEW_NEIGHBOR = "unife.icedroid.NEW_NEIGHBOR";
+    public static final String EXTRA_NEIGHBOR_UPDATE = "unife.icedroid.NEIGHBOR_UPDATE";
 
     private String hostID;
     private String hostUsername;
@@ -62,6 +64,13 @@ public class NeighborInfo {
 
     public void setCachedMessages(ArrayList<ICeDROIDMessage> messages) {
         cachedMessages = new ArrayList<>(messages);
+    }
+
+    public void copyFromNeighbor(NeighborInfo neighbor) {
+        hostUsername = neighbor.hostUsername;
+        lastTimeSeen = neighbor.lastTimeSeen;
+        hostChannels = neighbor.hostChannels;
+        cachedMessages = neighbor.cachedMessages;
     }
 
     @Override

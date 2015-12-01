@@ -1,6 +1,9 @@
 package unife.icedroid.core.managers;
 
+
+import android.util.Log;
 import unife.icedroid.core.NeighborInfo;
+import unife.icedroid.core.BaseMessage;
 import unife.icedroid.core.ICeDROIDMessage;
 import java.util.ArrayList;
 import java.util.Date;
@@ -9,9 +12,10 @@ import java.util.TimerTask;
 
 public class NeighborhoodManager {
     private static final String TAG = "NeighborhoodManager";
+    private static final boolean DEBUG = true;
 
     private volatile static NeighborhoodManager instance;
-    private static long ttlOfNeighbor = 15*1000;
+    private static final long ttlOfNeighbor = 50*1000;
 
     private ArrayList<NeighborInfo> neighborsList;
     private Timer neighborhoodManagerTimer;
@@ -37,21 +41,26 @@ public class NeighborhoodManager {
     public boolean add(NeighborInfo neighbor) {
         synchronized (neighborsList) {
             boolean newNeighbor = false;
-            int index = isNeighborPresent(neighbor);
 
-            if (index != -1) {
-                neighborsList.remove(index);
-                neighborsList.add(index, neighbor);
+            Date lastTimeSeen = new Date(System.currentTimeMillis());
+            neighbor.setLastTimeSeen(lastTimeSeen);
+
+            NeighborInfo ni = isNeighborPresent(neighbor);
+
+            NeighborRemoveTask task;
+            if (ni != null) {
+                ni.copyFromNeighbor(neighbor);
+                task = new NeighborRemoveTask(this, ni);
             } else {
                 neighborsList.add(neighbor);
                 newNeighbor = true;
+                task = new NeighborRemoveTask(this, neighbor);
             }
 
-            NeighborRemoveTask task = new NeighborRemoveTask(this, neighbor);
-            Date expirationTime = new Date(neighbor.getLastTimeSeen().getTime() + ttlOfNeighbor);
+            Date expirationTime = new Date(lastTimeSeen.getTime() + ttlOfNeighbor);
             neighborhoodManagerTimer.schedule(task, expirationTime);
 
-            lastUpdate = System.currentTimeMillis();
+            lastUpdate = lastTimeSeen.getTime();
             //Notify that an update was done
             neighborsList.notifyAll();
 
@@ -61,6 +70,7 @@ public class NeighborhoodManager {
 
     public synchronized void remove(NeighborInfo neighbor) {
         if (System.currentTimeMillis() > neighbor.getLastTimeSeen().getTime() + ttlOfNeighbor) {
+            if (DEBUG) Log.i(TAG, "Deleting neighbor...");
             neighborsList.remove(neighbor);
         }
     }
@@ -94,8 +104,8 @@ public class NeighborhoodManager {
 
     public synchronized boolean isThereNeighborWithoutThisMessage(ICeDROIDMessage msg) {
         String channel = msg.getChannel();
-        //Is there a neighbor that isn't interested to this message, doesn't belong
-        //to the same message channel and hasn't the message in its own cache?
+        //Is there a neighbor that isn't interested to this message (doesn't belong
+        //to the same message channel) and hasn't the message in its own cache?
         for (NeighborInfo neighbor : neighborsList) {
             if (!neighbor.getHostChannels().contains(channel) &&
                     !neighbor.getCachedMessages().contains(msg)) {
@@ -119,6 +129,18 @@ public class NeighborhoodManager {
         return neighbors;
     }
 
+    public boolean everyoneHasThisMessage(BaseMessage msg) {
+        synchronized (neighborsList) {
+            for (NeighborInfo n : neighborsList) {
+                ArrayList<ICeDROIDMessage> cms = n.getCachedMessages();
+                if (!cms.contains(msg)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
     public long isThereAnUpdate(long time) {
         synchronized (neighborsList) {
             try {
@@ -134,13 +156,13 @@ public class NeighborhoodManager {
         return lastUpdate;
     }
 
-    private int isNeighborPresent(NeighborInfo neighbor) {
-        for (int i = 0; i < neighborsList.size(); i++) {
-            if (neighbor.equals(neighborsList.get(i))) {
-                return i;
+    private NeighborInfo isNeighborPresent(NeighborInfo neighbor) {
+        for (NeighborInfo n : neighborsList) {
+            if (neighbor.equals(n)) {
+                return n;
             }
         }
-        return -1;
+        return null;
     }
 
     private class NeighborRemoveTask extends TimerTask {

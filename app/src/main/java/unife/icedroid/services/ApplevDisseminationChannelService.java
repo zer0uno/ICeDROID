@@ -2,11 +2,12 @@ package unife.icedroid.services;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.util.Log;
+import unife.icedroid.core.BaseMessage;
 import unife.icedroid.core.ICeDROIDMessage;
 import unife.icedroid.core.NeighborInfo;
 import unife.icedroid.core.managers.*;
 import unife.icedroid.utils.Settings;
-import java.util.ArrayList;
 import java.util.Random;
 
 public class ApplevDisseminationChannelService extends IntentService {
@@ -89,19 +90,29 @@ public class ApplevDisseminationChannelService extends IntentService {
             }
 
         }
-        //There's a new neighbor, so it must be checked which messages should be forwarded
-        // and which not
+        //There's a new neighbor or a neighbor update
         else {
-            boolean newNeighbor =
-                            intent.getBooleanExtra(NeighborInfo.EXTRA_NEW_NEIGHBOR, false);
 
-            if(newNeighbor) {
+            if(intent.hasExtra(NeighborInfo.EXTRA_NEW_NEIGHBOR)) {
+
+                if (DEBUG) Log.i(TAG, "#### NEW NEIGHBOR ####");
+
                 messageQueueManager.removeICeDROIDMessagesFromForwardingMessages();
-                ArrayList<ICeDROIDMessage> cachedMessages = messageQueueManager.getCachedMessages();
 
-                synchronized (cachedMessages) {
-                    for (ICeDROIDMessage msg : cachedMessages) {
-                        forwardMessage(msg, false);
+                for (ICeDROIDMessage msg : messageQueueManager.getCachedMessages()) {
+                    forwardMessage(msg, false);
+                }
+
+            } else {
+                //If everyone has a message then stop forwarding it
+
+                if (DEBUG) Log.i(TAG, "#### NEIGHBOR UPDATE ####");
+
+                for (BaseMessage m : messageQueueManager.getForwardingMessages()) {
+                    if (m.getTypeOfMessage().equals(ICeDROIDMessage.ICEDROID_MESSAGE)) {
+                        if (neighborhoodManager.everyoneHasThisMessage(m)) {
+                            messageQueueManager.removeMessageFromForwardingMessages(m);
+                        }
                     }
                 }
             }

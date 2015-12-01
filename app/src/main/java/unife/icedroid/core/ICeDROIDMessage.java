@@ -13,7 +13,7 @@ public class ICeDROIDMessage extends BaseMessage {
     public ICeDROIDMessage(String channel) {
         super();
         typeOfMessage = ICEDROID_MESSAGE;
-        ttl = 60*1000;
+        ttl = INFINITE_TTL;
         priority = NO_PRIORITY_LEVEL;
         this.channel = channel;
         properties = new HashMap<>(0);

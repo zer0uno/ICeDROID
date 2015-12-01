@@ -273,6 +273,8 @@ public class Settings {
                 }
             } catch (Exception ex) {
                 hostIP = null;
+                String msg = ex.getMessage();
+                if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Strange error....");
             }
 
             if (hostIP == null) {

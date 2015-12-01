@@ -29,7 +29,7 @@ public class SprayAndWaitThread implements Runnable {
     public void run() {
         if (DEBUG) Log.i(TAG, "Thread started");
         NeighborhoodManager neighborhoodManager = NeighborhoodManager.getNeighborhoodManager();
-        float numberOfNeighbors = neighborhoodManager.getNumberOfNeighbors();
+        int numberOfNeighbors = neighborhoodManager.getNumberOfNeighbors();
         int L = 1; /** L può anche essere determinato in modo dinamico */
         Intent intent = new Intent(service, ApplevDisseminationChannelService.class);
 
@@ -45,7 +45,7 @@ public class SprayAndWaitThread implements Runnable {
         while (L > 0 && !isExpired(message)) {
 
             for (NeighborInfo neighbor : neighborhoodManager.
-                    whoHasThisMessageButNotInterested(message)) {
+                                                     whoHasThisMessageButNotInterested(message)) {
                 if (!ackList.contains(neighbor)) {
                     L = (int) Math.ceil(L / 2);
                     ackList.add(neighbor);
@@ -72,11 +72,13 @@ public class SprayAndWaitThread implements Runnable {
             }
         }
 
-        message.setProperty("L", 0);
-        MessageQueueManager messageQueueManager = MessageQueueManager.getMessageQueueManager();
-        messageQueueManager.removeMessageFromForwardingMessages(message);
-        messageQueueManager.removeMessageFromCachedMessages(message);
-        messageQueueManager.addToCache(message);
+        if (!isExpired(message)) {
+            message.setProperty("L", 0);
+            MessageQueueManager messageQueueManager = MessageQueueManager.getMessageQueueManager();
+            messageQueueManager.removeMessageFromForwardingMessages(message);
+            messageQueueManager.removeMessageFromCachedMessages(message);
+            messageQueueManager.addToCache(message);
+        }
 
         service.stopSelf(startID);
     }

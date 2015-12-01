@@ -27,7 +27,8 @@ public class NICManager {
                 cmd = "iplink set " + s.getNetworkInterface() + " up";
                 Utils.rootExec(cmd);
 
-
+                //Set IP address and network settings
+                s.getHostIP();
 
                 //Controls to check that the interface is on ad-hoc mode and on the right essid
                 if (!checkInterfaceStatus(s, "Mode:Ad-Hoc",
@@ -58,12 +59,7 @@ public class NICManager {
             cmd = "iplink set " + s.getNetworkInterface() + " up";
             Utils.rootExec(cmd);
 
-            //Set IP address and network settings
-            s.getHostIP();
-
             //Controls to check that the interface is not on ad-hoc mode
-            cmd = "iwconfig " + s.getNetworkInterface();
-            ArrayList<String> results = Utils.exec(cmd);
             if (!checkInterfaceStatus(s, "Mode:Managed")) {
                 throw new WifiAdhocImpossibleToDisable("Impossible to disable Wifi Ad-Hoc");
             }

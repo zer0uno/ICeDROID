@@ -16,6 +16,7 @@ import java.util.*;
 public class HelloMessageService extends Service {
     private static final String TAG = "HelloMessageService";
     private static final boolean DEBUG = true;
+    private static final int DURATION = 15*1000;
 
     private MessageQueueManager messageQueueManager;
     private Timer helloMessageTimer;
@@ -34,24 +35,33 @@ public class HelloMessageService extends Service {
             HelloMessage helloMessage =
                     (HelloMessage) intent.getSerializableExtra(HelloMessage.EXTRA_HELLO_MESSAGE);
 
-            if (helloMessage != null) {
-                String hostID = helloMessage.getHostID();
-                String hostUsername = helloMessage.getHostUsername();
-                Date lastTimeSeen = helloMessage.getReceptionTime();
-                ArrayList<String> hostSubscription = helloMessage.getHostChannels();
-                ArrayList<ICeDROIDMessage> cachedMessages = helloMessage.getCachedMessages();
-                NeighborInfo neighbor = new NeighborInfo(hostID, hostUsername, lastTimeSeen,
-                        hostSubscription, cachedMessages);
-                boolean newNeighbor = NeighborhoodManager.getNeighborhoodManager().add(neighbor);
 
-                //If there is a new neighbor then there's need to recalculate forwarding messages
-                if (newNeighbor) {
-                    intent = new Intent(HelloMessageService.this,
-                                        ApplevDisseminationChannelService.class);
-                    intent.putExtra(NeighborInfo.EXTRA_NEW_NEIGHBOR, true);
-                    startService(intent);
-                }
+            NeighborInfo neighbor = createNeighborInfo(helloMessage);
+            boolean newNeighbor = NeighborhoodManager.getNeighborhoodManager().add(neighbor);
+
+            //If there is a new neighbor then there's need to recalculate forwarding messages
+            if (newNeighbor) {
+                intent = new Intent(HelloMessageService.this,
+                                                        ApplevDisseminationChannelService.class);
+                intent.putExtra(NeighborInfo.EXTRA_NEW_NEIGHBOR, true);
+                startService(intent);
+            } else {
+                intent = new Intent(HelloMessageService.this,
+                                                        ApplevDisseminationChannelService.class);
+                intent.putExtra(NeighborInfo.EXTRA_NEIGHBOR_UPDATE, true);
+                startService(intent);
             }
+        }
+
+        private NeighborInfo createNeighborInfo(HelloMessage helloMessage) {
+            String hostID = helloMessage.getHostID();
+            String hostUsername = helloMessage.getHostUsername();
+            Date lastTimeSeen = null;
+            ArrayList<String> hostSubscription = helloMessage.getHostChannels();
+            ArrayList<ICeDROIDMessage> cachedMessages = helloMessage.getCachedMessages();
+
+            return new NeighborInfo(hostID, hostUsername, lastTimeSeen,
+                    hostSubscription, cachedMessages);
         }
     }
 
@@ -66,11 +76,12 @@ public class HelloMessageService extends Service {
             public void run() {
                 HelloMessage helloMessage = new HelloMessage();
                 messageQueueManager.addToForwardingMessages(helloMessage);
-                Log.i(TAG, "HelloMessage added to ForwardingMessages");
+                Log.i(TAG, "HelloMessage added to ForwardingMessages, MsgID: " +
+                                                                        helloMessage.getMsgID());
 
             }
 
-        }, new Date(System.currentTimeMillis()), 15*1000);
+        }, new Date(System.currentTimeMillis()), DURATION);
 
         if (DEBUG) Log.i(TAG, "HelloMessageTimer ON");
 
@@ -78,18 +89,15 @@ public class HelloMessageService extends Service {
         thread.start();
 
         handler = new HelloMessageHandler(thread.getLooper());
-
-        /***
-         * TODO
-         * se tutti hanno quel messaggio smetto di inviarlo
-         * */
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
-        android.os.Message msg = handler.obtainMessage();
-        msg.obj = intent;
-        handler.sendMessage(msg);
+        if (intent.hasExtra(HelloMessage.EXTRA_HELLO_MESSAGE)) {
+            android.os.Message msg = handler.obtainMessage();
+            msg.obj = intent;
+            handler.sendMessage(msg);
+        }
 
         return START_STICKY;
     }

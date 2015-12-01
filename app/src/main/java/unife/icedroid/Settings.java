@@ -3,6 +3,7 @@ package unife.icedroid;
 import android.content.Context;
 import android.util.Log;
 import unife.icedroid.core.ICeDROID;
+import unife.icedroid.exceptions.WifiAdhocImpossibleToEnable;
 import unife.icedroid.services.ApplevDisseminationChannelService.OnMessageReceiveListener;
 
 public class Settings {
@@ -13,10 +14,13 @@ public class Settings {
 
     private ChatsManager chatsManager;
 
-    private Settings(Context context) {
-        ICeDROID.getInstance(context);
-        SubscriptionListManager.getSubscriptionListManager(context);
-        chatsManager = ChatsManager.getInstance(context);
+    private Settings(Context context) throws WifiAdhocImpossibleToEnable{
+        if (ICeDROID.getInstance(context) != null) {
+            SubscriptionListManager.getSubscriptionListManager(context);
+            chatsManager = ChatsManager.getInstance(context);
+        } else {
+            throw new WifiAdhocImpossibleToEnable();
+        }
     }
 
     public static Settings getSettings(Context context) {
@@ -28,6 +32,7 @@ public class Settings {
                     } catch (Exception ex) {
                         String msg = ex.getMessage();
                         if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error loading settings!");
+                        instance = null;
                     }
                 }
             }

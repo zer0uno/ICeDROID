@@ -33,7 +33,7 @@ BroadcastAddress = 192.168.255.255
 ReceivePort = 49152
 
 ## Message max length
-MsgSize = 2048
+MsgSize = 4096
 
 ## Routing Algorithm
 RoutingAlgorithm = SprayAndWait

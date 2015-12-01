@@ -125,6 +125,12 @@ public class MessageQueueManager {
         }
     }
 
+    public ArrayList<BaseMessage> getForwardingMessages() {
+        synchronized (forwardingMessages) {
+            return new ArrayList<>(forwardingMessages);
+        }
+    }
+
     public void removeFromQueue(ArrayList<?> queue, BaseMessage msg) {
         synchronized (queue) {
             queue.remove(msg);
@@ -186,10 +192,7 @@ public class MessageQueueManager {
 
     public boolean isExpired(BaseMessage msg) {
         if (msg.getTtl() != BaseMessage.INFINITE_TTL) {
-            long x = System.currentTimeMillis();
-            long y = msg.getCreationTime().getTime();
-            long z  =msg.getTtl();
-            if (x > y + z) {
+            if (System.currentTimeMillis() > msg.getCreationTime().getTime() + msg.getTtl()) {
                 return true;
             }
         }

@@ -12,14 +12,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import java.util.ArrayList;
 
 public class ICeDROIDActivity extends AppCompatActivity {
     private static final String TAG = "ICeDROIDActivity";
     private static final boolean DEBUG = true;
 
     private ArrayAdapter<Subscription> adapter;
-    private ArrayList<Subscription> oldSubscriptions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,11 +31,8 @@ public class ICeDROIDActivity extends AppCompatActivity {
         Settings s = Settings.getSettings(this);
         if (s == null) finish();
         else {
-
-            oldSubscriptions = SubscriptionListManager.getSubscriptionListManager().
-                                                                        getSubscriptionsList();
             adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
-                                                                            oldSubscriptions);
+                    SubscriptionListManager.getSubscriptionListManager().getSubscriptionsList());
 
             ListView listView = (ListView) findViewById(R.id.subscritions_list);
             listView.setAdapter(adapter);
@@ -78,35 +73,13 @@ public class ICeDROIDActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        ArrayList<Subscription> newSubscriptions = SubscriptionListManager.
-                                getSubscriptionListManager().getNewSubscriptions(oldSubscriptions);
-
-        for (Subscription s : newSubscriptions) {
-            adapter.add(s);
+        for (Subscription s : SubscriptionListManager.getSubscriptionListManager().
+                                                                        getSubscriptionsList()) {
+            if (adapter.getPosition(s) == -1) {
+                adapter.add(s);
+            }
         }
 
-        oldSubscriptions.addAll(newSubscriptions);
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
     }
 
     @Override
