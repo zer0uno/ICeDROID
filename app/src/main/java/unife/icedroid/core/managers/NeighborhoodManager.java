@@ -15,7 +15,7 @@ public class NeighborhoodManager {
     private static final boolean DEBUG = true;
 
     private volatile static NeighborhoodManager instance;
-    private static final long ttlOfNeighbor = 50*1000;
+    private static final long ttlOfNeighbor = 60*1000;
 
     private ArrayList<NeighborInfo> neighborsList;
     private Timer neighborhoodManagerTimer;
@@ -69,7 +69,10 @@ public class NeighborhoodManager {
     }
 
     public synchronized void remove(NeighborInfo neighbor) {
-        if (System.currentTimeMillis() > neighbor.getLastTimeSeen().getTime() + ttlOfNeighbor) {
+        long x = System.currentTimeMillis();
+        long y = neighbor.getLastTimeSeen().getTime();
+        long z = ttlOfNeighbor;
+        if (x > y + z) {
             if (DEBUG) Log.i(TAG, "Deleting neighbor...");
             neighborsList.remove(neighbor);
         }

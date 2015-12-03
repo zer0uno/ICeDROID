@@ -4,10 +4,13 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 import unife.icedroid.core.BaseMessage;
+import unife.icedroid.core.HelloMessage;
 import unife.icedroid.core.ICeDROIDMessage;
 import unife.icedroid.core.NeighborInfo;
 import unife.icedroid.core.managers.*;
 import unife.icedroid.utils.Settings;
+
+import java.util.ArrayList;
 import java.util.Random;
 
 public class ApplevDisseminationChannelService extends IntentService {
@@ -42,6 +45,7 @@ public class ApplevDisseminationChannelService extends IntentService {
         //There's a new regular message, first it must be decided whether to cache or not
         //and following whether to forward it or not
         if (iceMessage != null) {
+            if (DEBUG) Log.i(TAG, "Handling an ICeDROIDMessage");
             //This host's messages
             if (iceMessage.getHostID().equals(Settings.getSettings().getHostID())) {
                 switch (Settings.getSettings().getRoutingAlgorithm()) {
@@ -92,6 +96,8 @@ public class ApplevDisseminationChannelService extends IntentService {
         }
         //There's a new neighbor or a neighbor update
         else {
+            HelloMessage helloMessage = (HelloMessage) intent.getSerializableExtra(HelloMessage.
+                                                                            EXTRA_HELLO_MESSAGE);
 
             if(intent.hasExtra(NeighborInfo.EXTRA_NEW_NEIGHBOR)) {
 
@@ -107,10 +113,15 @@ public class ApplevDisseminationChannelService extends IntentService {
                 //If everyone has a message then stop forwarding it
 
                 if (DEBUG) Log.i(TAG, "#### NEIGHBOR UPDATE ####");
+                if (DEBUG) Log.i(TAG, "Handling an HelloMessage UPDATE " + helloMessage.getMsgID());
 
-                for (BaseMessage m : messageQueueManager.getForwardingMessages()) {
+                ArrayList<BaseMessage> fm = messageQueueManager.getForwardingMessages();
+
+                for (BaseMessage m : fm) {
                     if (m.getTypeOfMessage().equals(ICeDROIDMessage.ICEDROID_MESSAGE)) {
+                        if (DEBUG) Log.i(TAG, "01");
                         if (neighborhoodManager.everyoneHasThisMessage(m)) {
+                            if (DEBUG) Log.i(TAG, "Handling an HelloMessage: removed " + m);
                             messageQueueManager.removeMessageFromForwardingMessages(m);
                         }
                     }

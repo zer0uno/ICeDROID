@@ -186,8 +186,9 @@ public class MessageQueueManager {
                     }
                 }
             }
+            return message;
         }
-        return message;
+
     }
 
     public boolean isExpired(BaseMessage msg) {

@@ -39,6 +39,7 @@ public class BroadcastSendThread implements Runnable {
 
     @Override
     public void run() {
+        int counter = 0;
         if (!Thread.interrupted()) {
             try {
                 InetAddress broadcastAddress = InetAddress.getByName(networkBroadcastAddress);
@@ -65,10 +66,10 @@ public class BroadcastSendThread implements Runnable {
                     }
 
                     if (data != null) {
-                        packet = new DatagramPacket(data, data.length,
-                                                            broadcastAddress, recvPort);
+                        packet = new DatagramPacket(data, data.length, broadcastAddress, recvPort);
                         socket.send(packet);
-                        if (DEBUG) Log.i(TAG, "Message sent: " + message);
+                        counter++;
+                        if (DEBUG) Log.i(TAG, "Message sent " + counter + ": " + message);
                     }
                 }
             } catch (Exception ex) {

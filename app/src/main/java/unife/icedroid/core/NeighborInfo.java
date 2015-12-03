@@ -1,10 +1,11 @@
 package unife.icedroid.core;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
-public class NeighborInfo {
+public class NeighborInfo implements Serializable {
+    public static final String EXTRA_NEIGHBOR = "unife.icedroid.NEIGHBOR";
     public static final String EXTRA_NEW_NEIGHBOR = "unife.icedroid.NEW_NEIGHBOR";
     public static final String EXTRA_NEIGHBOR_UPDATE = "unife.icedroid.NEIGHBOR_UPDATE";
 

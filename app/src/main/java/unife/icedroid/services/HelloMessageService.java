@@ -39,28 +39,24 @@ public class HelloMessageService extends Service {
             NeighborInfo neighbor = createNeighborInfo(helloMessage);
             boolean newNeighbor = NeighborhoodManager.getNeighborhoodManager().add(neighbor);
 
+            intent = new Intent(HelloMessageService.this, ApplevDisseminationChannelService.class);
+            intent.putExtra(HelloMessage.EXTRA_HELLO_MESSAGE, helloMessage);
             //If there is a new neighbor then there's need to recalculate forwarding messages
             if (newNeighbor) {
-                intent = new Intent(HelloMessageService.this,
-                                                        ApplevDisseminationChannelService.class);
                 intent.putExtra(NeighborInfo.EXTRA_NEW_NEIGHBOR, true);
-                startService(intent);
             } else {
-                intent = new Intent(HelloMessageService.this,
-                                                        ApplevDisseminationChannelService.class);
                 intent.putExtra(NeighborInfo.EXTRA_NEIGHBOR_UPDATE, true);
-                startService(intent);
             }
+            startService(intent);
         }
 
         private NeighborInfo createNeighborInfo(HelloMessage helloMessage) {
             String hostID = helloMessage.getHostID();
             String hostUsername = helloMessage.getHostUsername();
-            Date lastTimeSeen = null;
             ArrayList<String> hostSubscription = helloMessage.getHostChannels();
             ArrayList<ICeDROIDMessage> cachedMessages = helloMessage.getCachedMessages();
 
-            return new NeighborInfo(hostID, hostUsername, lastTimeSeen,
+            return new NeighborInfo(hostID, hostUsername, null,
                     hostSubscription, cachedMessages);
         }
     }
@@ -82,8 +78,6 @@ public class HelloMessageService extends Service {
             }
 
         }, new Date(System.currentTimeMillis()), DURATION);
-
-        if (DEBUG) Log.i(TAG, "HelloMessageTimer ON");
 
         thread = new HandlerThread("HelloMessageServiceThread", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
