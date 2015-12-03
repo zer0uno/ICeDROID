@@ -12,17 +12,19 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class MessageDispatcher implements Runnable {
+public class MessageDispatcher extends Thread {
     private static final String TAG = "MessageDispatcher";
     private static final boolean DEBUG = true;
     private static final Settings s = Settings.getSettings();
 
     private Context context;
     private ArrayList<DatagramPacket> packets;
+    private ApplevDisseminationChannelService ADCThread;
 
-    public MessageDispatcher(Context context, ArrayList<DatagramPacket> packets) {
+    public MessageDispatcher(Context context) {
         this.context = context;
-        this.packets = packets;
+        this.packets = new ArrayList<>(0);
+        ADCThread = Settings.getSettings().getADCThread();
     }
 
 
@@ -54,10 +56,7 @@ public class MessageDispatcher implements Runnable {
                 messageSource = message.getHostID();
 
                 if (!messageSource.equals(s.getHostID())) {
-                    if (DEBUG)
-                        Log.i(TAG, "Received a message" + message + " size: " +
-                                                                                message.getSize());
-
+                    Log.i(TAG, "Received message: " + message);
                     //Set message reception time
                     message.setReceptionTime(new Date(System.currentTimeMillis()));
 
@@ -66,16 +65,24 @@ public class MessageDispatcher implements Runnable {
                         intent = new Intent(context, ApplevDisseminationChannelService.class);
                         intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
                                                                                         message);
+                        ADCThread.add(intent);
                     } else {
                         intent = new Intent(context, HelloMessageService.class);
                         intent.putExtra(HelloMessage.EXTRA_HELLO_MESSAGE, message);
+                        context.startService(intent);
                     }
-                    context.startService(intent);
                 }
             } catch (Exception ex) {
                 String msg = ex.getMessage();
                 if (DEBUG) Log.e(TAG, (msg != null) ? msg : "deliver(): An error occurred");
             }
+        }
+    }
+
+    public void add(DatagramPacket packet) {
+        synchronized (packets) {
+            packets.add(packet);
+            packets.notifyAll();
         }
     }
 }

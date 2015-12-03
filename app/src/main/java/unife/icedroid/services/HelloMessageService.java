@@ -11,6 +11,8 @@ import android.os.Process;
 import unife.icedroid.core.*;
 import unife.icedroid.core.managers.MessageQueueManager;
 import unife.icedroid.core.managers.NeighborhoodManager;
+import unife.icedroid.utils.Settings;
+
 import java.util.*;
 
 public class HelloMessageService extends Service {
@@ -22,6 +24,7 @@ public class HelloMessageService extends Service {
     private Timer helloMessageTimer;
     private HandlerThread thread;
     private HelloMessageHandler handler;
+    private ApplevDisseminationChannelService ADCThread;
 
     private final class HelloMessageHandler extends Handler {
 
@@ -47,7 +50,7 @@ public class HelloMessageService extends Service {
             } else {
                 intent.putExtra(NeighborInfo.EXTRA_NEIGHBOR_UPDATE, true);
             }
-            startService(intent);
+            ADCThread.add(intent);
         }
 
         private NeighborInfo createNeighborInfo(HelloMessage helloMessage) {
@@ -64,6 +67,7 @@ public class HelloMessageService extends Service {
     @Override
     public void onCreate() {
         messageQueueManager = MessageQueueManager.getMessageQueueManager();
+        ADCThread = Settings.getSettings().getADCThread();
 
         helloMessageTimer = new Timer(TAG);
         helloMessageTimer.schedule(new TimerTask() {
@@ -72,9 +76,6 @@ public class HelloMessageService extends Service {
             public void run() {
                 HelloMessage helloMessage = new HelloMessage();
                 messageQueueManager.addToForwardingMessages(helloMessage);
-                Log.i(TAG, "HelloMessage added to ForwardingMessages, MsgID: " +
-                                                                        helloMessage.getMsgID());
-
             }
 
         }, new Date(System.currentTimeMillis()), DURATION);

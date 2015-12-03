@@ -9,6 +9,7 @@ import unife.icedroid.core.ICeDROIDMessage;
 import unife.icedroid.core.managers.MessageQueueManager;
 import unife.icedroid.core.managers.NeighborhoodManager;
 import unife.icedroid.services.ApplevDisseminationChannelService;
+import unife.icedroid.utils.Settings;
 import java.util.ArrayList;
 
 public class SprayAndWaitThread implements Runnable {
@@ -36,7 +37,7 @@ public class SprayAndWaitThread implements Runnable {
         if (numberOfNeighbors == 0) {
             //If there is no neighbor just cache the message
             intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE, message);
-            service.startService(intent);
+            Settings.getSettings().getADCThread().add(intent);
         }
 
         ArrayList<NeighborInfo> ackList = new ArrayList<>(0);
@@ -58,14 +59,14 @@ public class SprayAndWaitThread implements Runnable {
                 if (neighborhoodManager.isThereNeighborSubscribedToChannel(message)) {
                     message.setProperty("L", 0);
                     intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE, message);
-                    service.startService(intent);
+                    Settings.getSettings().getADCThread().add(intent);
                 } else {
                     if (neighborhoodManager.
                             isThereNeighborNotInterestedToMessageAndNotCached(message)) {
                         message.setProperty("L", L);
                         intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
                                                                                         message);
-                        service.startService(intent);
+                        Settings.getSettings().getADCThread().add(intent);
                     }
                 }
                 lastUpdate = neighborhoodManager.isThereAnUpdate(lastUpdate);
@@ -80,6 +81,7 @@ public class SprayAndWaitThread implements Runnable {
             messageQueueManager.addToCache(message);
         }
 
+        Log.i(TAG, "Exiting...");
         service.stopSelf(startID);
     }
 

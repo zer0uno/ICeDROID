@@ -1,6 +1,5 @@
 package unife.icedroid.core.managers;
 
-
 import android.util.Log;
 import unife.icedroid.core.NeighborInfo;
 import unife.icedroid.core.BaseMessage;

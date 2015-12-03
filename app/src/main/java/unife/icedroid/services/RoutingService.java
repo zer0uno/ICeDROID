@@ -26,14 +26,6 @@ public class RoutingService extends Service {
         return null;
     }
 
-    @Override
-    public void onDestroy() {
-        /**
-         * TODO
-         * devo richiare i thread?
-        */
-    }
-
     private void startRoutingAlgorithm(Service service, int startID, ICeDROIDMessage message) {
         Thread thread = null;
         switch (Settings.getSettings().getRoutingAlgorithm()) {

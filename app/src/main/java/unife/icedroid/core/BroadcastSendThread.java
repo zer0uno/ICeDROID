@@ -69,7 +69,7 @@ public class BroadcastSendThread implements Runnable {
                         packet = new DatagramPacket(data, data.length, broadcastAddress, recvPort);
                         socket.send(packet);
                         counter++;
-                        if (DEBUG) Log.i(TAG, "Message sent " + counter + ": " + message);
+                        Log.i(TAG, "Message sent " + counter + ": " + message);
                     }
                 }
             } catch (Exception ex) {

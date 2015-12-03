@@ -12,12 +12,12 @@ public class Settings {
 
     private volatile static Settings instance;
 
-    private ChatsManager chatsManager;
+    private static ChatsManager chatsManager;
 
     private Settings(Context context) throws WifiAdhocImpossibleToEnable{
+        chatsManager = ChatsManager.getInstance(context);
         if (ICeDROID.getInstance(context) != null) {
             SubscriptionListManager.getSubscriptionListManager(context);
-            chatsManager = ChatsManager.getInstance(context);
         } else {
             throw new WifiAdhocImpossibleToEnable();
         }
@@ -46,7 +46,7 @@ public class Settings {
         }
     }
 
-    public OnMessageReceiveListener getListener() {
+    public static OnMessageReceiveListener getListener() {
         return chatsManager;
     }
 }

@@ -53,10 +53,11 @@ public class ICeDROID {
     }
 
     public void send(ICeDROIDMessage message) {
-        /*Intent intent = new Intent(context, RoutingService.class);*/
-        Intent intent = new Intent(context, ApplevDisseminationChannelService.class);
-        /*intent.putExtra(RoutingService.EXTRA_NEW_MESSAGE, message);*/
-        intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE, message);
+        Intent intent = new Intent(context, RoutingService.class);
+        intent.putExtra(RoutingService.EXTRA_NEW_MESSAGE, message);
         context.startService(intent);
+        /*Intent intent = new Intent(context, ApplevDisseminationChannelService.class);
+        intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE, message);
+        Settings.getSettings().getADCThread().add(intent);*/
     }
 }

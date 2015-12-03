@@ -12,6 +12,7 @@ import android.widget.Toast;
 import unife.icedroid.R;
 import unife.icedroid.core.managers.ChannelListManager;
 import unife.icedroid.exceptions.ImpossibleToGetIPAddress;
+import unife.icedroid.services.ApplevDisseminationChannelService;
 import unife.icedroid.services.BroadcastReceiveService;
 import unife.icedroid.services.BroadcastSendService;
 import unife.icedroid.services.HelloMessageService;
@@ -47,6 +48,7 @@ public class Settings {
     private int cacheSize;
     private CachingStrategy cachingStrategy;
     private ForwardingStrategy forwardingStrategy;
+    private ApplevDisseminationChannelService ADCThread;
 
     private Context context;
     private WifiManager wifiManager;
@@ -158,12 +160,6 @@ public class Settings {
 
         if (hostID == null) hostID = wifiManager.getConnectionInfo().getMacAddress();
 
-        /**
-         *  TODO
-         *  Trovare un modo per evitare di dover aspettare che il wifi si attivi, vedere anche con
-         *  attempts di 10, attenzione però al fatto "link già esistente"
-        */
-
         NICManager.startWifiAdhoc(this);
 
         //UI changes must run on the UI main thread
@@ -185,6 +181,9 @@ public class Settings {
         /*******************************************/
         /** Starting various services for the app **/
         /*******************************************/
+        //Application-level Dissemination Channel Service
+        ADCThread = new ApplevDisseminationChannelService();
+        ADCThread.start();
         Intent intent;
         //BroadcastReceiveService
         intent = new Intent(context, BroadcastReceiveService.class);
@@ -349,6 +348,10 @@ public class Settings {
 
     public ForwardingStrategy getForwardingStrategy() {
         return forwardingStrategy;
+    }
+
+    public ApplevDisseminationChannelService getADCThread() {
+        return ADCThread;
     }
 
     public void close() {

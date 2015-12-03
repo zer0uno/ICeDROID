@@ -15,14 +15,13 @@ public class BroadcastReceiveThread implements Runnable {
     private DatagramSocket socket;
     private Context context;
     private ArrayList<DatagramPacket> packets;
-    private Thread messageDispatcherThread;
+    private MessageDispatcher messageDispatcherThread;
 
     public BroadcastReceiveThread(Settings s, Context context, DatagramSocket socket) {
         this.s = s;
         this.context = context;
         this.socket = socket;
-        this.packets = new ArrayList<>(0);
-        messageDispatcherThread = new Thread(new MessageDispatcher(context, packets));
+        messageDispatcherThread = new MessageDispatcher(context);
         messageDispatcherThread.start();
     }
 
@@ -37,11 +36,8 @@ public class BroadcastReceiveThread implements Runnable {
                     data = new byte[s.getMessageSize()];
                     packet = new DatagramPacket(data, data.length);
                     socket.receive(packet);
-                    synchronized (packets) {
-                        if (!packet.getAddress().getHostAddress().equals(s.getHostIP())) {
-                            packets.add(packet);
-                            packets.notifyAll();
-                        }
+                    if (!packet.getAddress().getHostAddress().equals(s.getHostIP())) {
+                        messageDispatcherThread.add(packet);
                     }
                 }
 
