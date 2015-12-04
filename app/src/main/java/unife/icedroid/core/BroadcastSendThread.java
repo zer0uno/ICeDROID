@@ -67,6 +67,7 @@ public class BroadcastSendThread implements Runnable {
 
                     if (data != null) {
                         packet = new DatagramPacket(data, data.length, broadcastAddress, recvPort);
+                        Thread.sleep(1000);
                         socket.send(packet);
                         counter++;
                         Log.i(TAG, "Message sent " + counter + ": " + message);

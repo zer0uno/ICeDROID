@@ -1,13 +1,12 @@
 package unife.icedroid.core;
 
 import android.content.Context;
-import android.content.Intent;
+
 import unife.icedroid.core.managers.ChannelListManager;
 import unife.icedroid.core.managers.MessageQueueManager;
 import unife.icedroid.core.managers.NeighborhoodManager;
+import unife.icedroid.core.routingalgorithms.SprayAndWaitThread;
 import unife.icedroid.exceptions.WifiAdhocImpossibleToEnable;
-import unife.icedroid.services.ApplevDisseminationChannelService;
-import unife.icedroid.services.RoutingService;
 import unife.icedroid.utils.Settings;
 
 public class ICeDROID {
@@ -17,6 +16,7 @@ public class ICeDROID {
     private ChannelListManager channelListManager;
     private NeighborhoodManager neighborhoodManager;
     private MessageQueueManager messageQueueManager;
+    private Thread routingThread;
 
     private ICeDROID(Context context) throws WifiAdhocImpossibleToEnable{
         this.context = context.getApplicationContext();
@@ -53,11 +53,22 @@ public class ICeDROID {
     }
 
     public void send(ICeDROIDMessage message) {
-        Intent intent = new Intent(context, RoutingService.class);
-        intent.putExtra(RoutingService.EXTRA_NEW_MESSAGE, message);
-        context.startService(intent);
-        /*Intent intent = new Intent(context, ApplevDisseminationChannelService.class);
-        intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE, message);
-        Settings.getSettings().getADCThread().add(intent);*/
+        switch (Settings.getSettings().getRoutingAlgorithm()) {
+            case SPRAY_AND_WAIT:
+                boolean added = false;
+                while (!added) {
+                    try {
+                        added = ((SprayAndWaitThread) routingThread).add(message);
+                    } catch (Exception ex) {}
+
+                    if (!added) {
+                        routingThread = new SprayAndWaitThread();
+                        routingThread.start();
+                    }
+                }
+                break;
+            default:
+                break;
+        }
     }
 }

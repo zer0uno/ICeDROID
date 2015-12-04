@@ -1,8 +1,8 @@
 package unife.icedroid.core.routingalgorithms;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import unife.icedroid.core.BaseMessage;
 import unife.icedroid.core.NeighborInfo;
 import unife.icedroid.core.ICeDROIDMessage;
@@ -11,78 +11,151 @@ import unife.icedroid.core.managers.NeighborhoodManager;
 import unife.icedroid.services.ApplevDisseminationChannelService;
 import unife.icedroid.utils.Settings;
 import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Condition;
 
-public class SprayAndWaitThread implements Runnable {
+public class SprayAndWaitThread extends Thread {
     private static final String TAG = "SprayAndWaitThread";
     private static final boolean DEBUG = true;
 
-    private Service service;
-    private int startID;
-    private ICeDROIDMessage message;
+    private ArrayList<ICeDROIDMessage> messages;
+    private ArrayList<ArrayList<NeighborInfo>> ackLists;
+    private ArrayList<Integer> Ls;
+    private Lock lock;
+    private Condition mQueue;
 
-    public SprayAndWaitThread(Service service, int startID, ICeDROIDMessage msg) {
-        this.service = service;
-        this.startID = startID;
-        message = msg;
+    public SprayAndWaitThread() {
+        lock = new ReentrantLock();
+        mQueue = lock.newCondition();
+        messages = new ArrayList<>(0);
+        ackLists = new ArrayList<>(0);
+        Ls = new ArrayList<>(0);
     }
 
     @Override
     public void run() {
-        if (DEBUG) Log.i(TAG, "Thread started");
+        lock.lock();
+        //Wait for the first message
+        while (messages.size() == 0) {
+            try {
+                mQueue.await();
+            } catch (Exception ex) {
+            }
+        }
+        lock.unlock();
+
+        ICeDROIDMessage msg;
         NeighborhoodManager neighborhoodManager = NeighborhoodManager.getNeighborhoodManager();
-        int numberOfNeighbors = neighborhoodManager.getNumberOfNeighbors();
-        int L = 1; /** L può anche essere determinato in modo dinamico */
-        Intent intent = new Intent(service, ApplevDisseminationChannelService.class);
-
-        if (numberOfNeighbors == 0) {
-            //If there is no neighbor just cache the message
-            intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE, message);
-            Settings.getSettings().getADCThread().add(intent);
-        }
-
-        ArrayList<NeighborInfo> ackList = new ArrayList<>(0);
+        MessageQueueManager messageQueueManager = MessageQueueManager.getMessageQueueManager();
+        int L = 1;
+        int msgL;
+        Intent intent = new Intent();
+        ArrayList<NeighborInfo> ackL;
+        int index = 0;
         long lastUpdate = 0;
+        while (!Thread.interrupted()) {
+            lock.lock();
+            if (messages.size() == 0) {
+                interrupt();
+                lock.unlock();
+            } else {
+                lock.unlock();
+                msg = messages.get(index);
 
-        while (L > 0 && !isExpired(message)) {
+                if (!isExpired(msg)) {
 
-            for (NeighborInfo neighbor : neighborhoodManager.
-                                                     whoHasThisMessageButNotInterested(message)) {
-                if (!ackList.contains(neighbor)) {
-                    L = (int) Math.ceil(L / 2);
-                    ackList.add(neighbor);
-                    if (L <= 0) {
-                        break;
+                    if (Ls.get(index) == null) {
+                        Ls.remove(index);
+                        Ls.add(index, L);
+                        msgL = L;
+                        if (neighborhoodManager.getNumberOfNeighbors() == 0) {
+                            intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
+                                                                                            msg);
+                            Settings.getSettings().getADCThread().add(intent);
+                        }
+                    } else {
+                        msgL = Ls.get(index);
                     }
-                }
-            }
-            if (L > 0) {
-                if (neighborhoodManager.isThereNeighborSubscribedToChannel(message)) {
-                    message.setProperty("L", 0);
-                    intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE, message);
-                    Settings.getSettings().getADCThread().add(intent);
+
+                    ackL = ackLists.get(index);
+                    for (NeighborInfo neighbor : neighborhoodManager.
+                                                         whoHasThisMessageButNotInterested(msg)) {
+                        if (!ackL.contains(neighbor)) {
+                            msgL = (int) Math.ceil(L / 2);
+                            ackL.add(neighbor);
+                            if (msgL <= 0) {
+                                break;
+                            }
+                        }
+                    }
+                    Ls.remove(index);
+                    Ls.add(index, msgL);
+
+                    if (msgL > 0) {
+                        if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
+                            msg.setProperty("L", 0);
+                            intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
+                                                                                            msg);
+                            Settings.getSettings().getADCThread().add(intent);
+                        } else {
+                            if (neighborhoodManager.
+                                    isThereNeighborNotInterestedToMessageAndNotCached(msg)) {
+                                msg.setProperty("L", msgL);
+                                intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
+                                        msg);
+                                Settings.getSettings().getADCThread().add(intent);
+                            }
+                        }
+
+                    } else {
+                        msg.setProperty("L", msgL);
+                        remove(msg, index);
+                        messageQueueManager.removeMessageFromForwardingMessages(msg);
+                        messageQueueManager.removeMessageFromCachedMessages(msg);
+                        messageQueueManager.addToCache(msg);
+                    }
                 } else {
-                    if (neighborhoodManager.
-                            isThereNeighborNotInterestedToMessageAndNotCached(message)) {
-                        message.setProperty("L", L);
-                        intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
-                                                                                        message);
-                        Settings.getSettings().getADCThread().add(intent);
-                    }
+                    remove(msg, index);
                 }
-                lastUpdate = neighborhoodManager.isThereAnUpdate(lastUpdate);
+
+                boolean waitForUpdate = false;
+                lock.lock();
+                if (index + 1 >= messages.size()) {
+                    index = 0;
+                    waitForUpdate = true;
+                } else {
+                    index++;
+                }
+                lock.unlock();
+
+                if (waitForUpdate) {
+                    lastUpdate = neighborhoodManager.isThereAnUpdate(lastUpdate);
+                }
             }
         }
+    }
 
-        if (!isExpired(message)) {
-            message.setProperty("L", 0);
-            MessageQueueManager messageQueueManager = MessageQueueManager.getMessageQueueManager();
-            messageQueueManager.removeMessageFromForwardingMessages(message);
-            messageQueueManager.removeMessageFromCachedMessages(message);
-            messageQueueManager.addToCache(message);
+    public boolean add(ICeDROIDMessage msg) {
+        boolean result = false;
+        lock.lock();
+        if (!isInterrupted()) {
+            messages.add(msg);
+            ackLists.add(new ArrayList<NeighborInfo>());
+            Ls.add(null);
+            mQueue.signal();
+            result = true;
         }
+        lock.unlock();
+        return result;
+    }
 
-        Log.i(TAG, "Exiting...");
-        service.stopSelf(startID);
+    public void remove(ICeDROIDMessage msg, int index) {
+        lock.lock();
+        messages.remove(index);
+        ackLists.remove(index);
+        Ls.remove(index);
+        lock.unlock();
     }
 
     private boolean isExpired(BaseMessage msg) {

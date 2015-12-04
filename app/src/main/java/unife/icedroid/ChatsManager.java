@@ -58,6 +58,8 @@ public class ChatsManager implements OnMessageReceiveListener {
             if (SubscriptionListManager.getSubscriptionListManager().isSubscribedToMessage(txt)) {
                 saveMessageInConversation(txt);
             }
-        } catch (Exception ex) {}
+        } catch (Exception ex) {
+            String msg = ex.getMessage();
+        }
     }
 }

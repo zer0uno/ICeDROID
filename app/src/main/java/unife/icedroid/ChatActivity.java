@@ -19,7 +19,6 @@ import android.os.FileObserver;
 import android.util.Log;
 
 import unife.icedroid.core.ICeDROID;
-import unife.icedroid.services.RoutingService;
 
 public class ChatActivity extends AppCompatActivity
                         implements LoaderManager.LoaderCallbacks<ArrayList<String>> {
