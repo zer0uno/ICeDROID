@@ -67,7 +67,7 @@ public class NeighborInfo implements Serializable {
         cachedMessages = new ArrayList<>(messages);
     }
 
-    public void copyFromNeighbor(NeighborInfo neighbor) {
+    public void update(NeighborInfo neighbor) {
         hostUsername = neighbor.hostUsername;
         lastTimeSeen = neighbor.lastTimeSeen;
         hostChannels = neighbor.hostChannels;

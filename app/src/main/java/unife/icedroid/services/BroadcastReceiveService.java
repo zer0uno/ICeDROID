@@ -27,7 +27,6 @@ public class BroadcastReceiveService extends Service {
                 recvThread = new Thread(new BroadcastReceiveThread(
                                                             s, getApplicationContext(), socket));
                 recvThread.start();
-                if (DEBUG) Log.i(TAG, "BroadcastReceiveThread started");
             } catch (Exception ex) {
                 String msg = ex.getMessage();
                 if (DEBUG) Log.e(TAG, (msg != null) ? msg : "onCreate(): An error occurred");
@@ -50,12 +49,5 @@ public class BroadcastReceiveService extends Service {
     public void onDestroy() {
         recvThread.interrupt();
         socket.close();
-        try {
-            recvThread.join();
-        } catch (Exception ex) {
-            String msg = ex.getMessage();
-            if (DEBUG) Log.e(TAG, (msg != null)? msg : "onDestroy(): An error occurred");
-        }
-        if (DEBUG) Log.i(TAG, "BroadcastReceiveService destroyed");
     }
 }

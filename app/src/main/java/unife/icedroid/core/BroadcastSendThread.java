@@ -20,57 +20,53 @@ public class BroadcastSendThread implements Runnable {
     private int recvPort;
 
 
-    public BroadcastSendThread(Settings s) {
+    public BroadcastSendThread() {
+        Settings s = Settings.getSettings();
         messageQueueManager = MessageQueueManager.getMessageQueueManager();
-        if (s != null) {
-            try {
-                InetAddress localHost = InetAddress.getByName(s.getHostIP());
-                socket = new DatagramSocket(0, localHost);
-                socket.setBroadcast(true);
-                networkBroadcastAddress = s.getNetworkBroadcastAddress();
-                recvPort = s.getReceivePort();
-            } catch (Exception ex) {
-                String msg = ex.getMessage();
-                if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Socket error");
-                Thread.currentThread().interrupt();
-            }
+        try {
+            InetAddress localHost = InetAddress.getByName(s.getHostIP());
+            socket = new DatagramSocket(0, localHost);
+            socket.setBroadcast(true);
+            networkBroadcastAddress = s.getNetworkBroadcastAddress();
+            recvPort = s.getReceivePort();
+        } catch (Exception ex) {
+            String msg = ex.getMessage();
+            if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Socket error");
+            Thread.currentThread().interrupt();
         }
     }
 
     @Override
     public void run() {
-        int counter = 0;
         if (!Thread.interrupted()) {
             try {
                 InetAddress broadcastAddress = InetAddress.getByName(networkBroadcastAddress);
-                BaseMessage message;
+                BaseMessage baseMessage;
                 byte[] data;
                 ByteArrayOutputStream byteArrayOutputStream;
                 ObjectOutputStream objectOutputStream;
                 DatagramPacket packet;
 
                 while (true) {
-                    message = messageQueueManager.getMessageToSend();
+                    baseMessage = messageQueueManager.getMessageToSend();
 
-                    //Need to ger a byte representation of the message
+                    //Need to get a byte representation of the message
                     byteArrayOutputStream = new ByteArrayOutputStream();
                     try {
                         objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-                        objectOutputStream.writeObject(message);
+                        objectOutputStream.writeObject(baseMessage);
                         data = byteArrayOutputStream.toByteArray();
                     } catch (IOException ex) {
                         data = null;
                         String msg = ex.getMessage();
                         if (DEBUG) Log.e(TAG, (msg != null) ? msg :
-                                            "Impossible to convert to byte: " + message);
+                                            "Impossible to convert to byte: " + baseMessage);
                     }
 
                     if (data != null) {
                         packet = new DatagramPacket(data, data.length, broadcastAddress, recvPort);
-                        Thread.sleep(1000);
                         socket.send(packet);
-                        counter++;
-                        Log.i(TAG, "Message sent " + counter + ": " + message);
+                        Log.i(TAG, "Message sent: " + baseMessage);
                     }
                 }
             } catch (Exception ex) {
@@ -79,7 +75,5 @@ public class BroadcastSendThread implements Runnable {
                 if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Closing BroadcastReceiveThread");
             }
         }
-
-        if (DEBUG) Log.e(TAG, "SEND thread is deading");
     }
 }

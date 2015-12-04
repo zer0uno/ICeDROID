@@ -1,7 +1,5 @@
 package unife.icedroid.core.routingalgorithms;
 
-import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import unife.icedroid.core.BaseMessage;
 import unife.icedroid.core.NeighborInfo;

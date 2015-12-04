@@ -42,12 +42,14 @@ public class HelloMessageService extends Service {
             NeighborInfo neighbor = createNeighborInfo(helloMessage);
             boolean newNeighbor = NeighborhoodManager.getNeighborhoodManager().add(neighbor);
 
-            intent = new Intent(HelloMessageService.this, ApplevDisseminationChannelService.class);
+            intent = new Intent();
             intent.putExtra(HelloMessage.EXTRA_HELLO_MESSAGE, helloMessage);
-            //If there is a new neighbor then there's need to recalculate forwarding messages
+
             if (newNeighbor) {
+                //If there is a new neighbor then there's need to recalculate forwarding messages
                 intent.putExtra(NeighborInfo.EXTRA_NEW_NEIGHBOR, true);
             } else {
+                //If all neighbors have a message, then it's needed to stop forwarding it
                 intent.putExtra(NeighborInfo.EXTRA_NEIGHBOR_UPDATE, true);
             }
             ADCThread.add(intent);
@@ -93,7 +95,6 @@ public class HelloMessageService extends Service {
             msg.obj = intent;
             handler.sendMessage(msg);
         }
-
         return START_STICKY;
     }
 
@@ -105,7 +106,6 @@ public class HelloMessageService extends Service {
     @Override
     public void onDestroy() {
         thread.interrupt();
-        if (DEBUG) Log.i(TAG, "Service destroyed");
         helloMessageTimer.cancel();
         super.onDestroy();
     }

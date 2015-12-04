@@ -17,9 +17,8 @@ public class BroadcastSendService extends Service {
     @Override
     public void onCreate() {
         try {
-            sendThread = new Thread(new BroadcastSendThread(Settings.getSettings()));
+            sendThread = new Thread(new BroadcastSendThread());
             sendThread.start();
-            if (DEBUG) Log.i(TAG, "BroadcastSendThread started");
         } catch (Exception ex) {
             String msg = ex.getMessage();
             if (DEBUG) Log.e(TAG, (msg != null) ? msg : "onCreate(): An error occurred");
@@ -40,6 +39,5 @@ public class BroadcastSendService extends Service {
     @Override
     public void onDestroy() {
         sendThread.interrupt();
-        if (DEBUG) Log.i(TAG, "BroadcastSendService destroyed");
     }
 }

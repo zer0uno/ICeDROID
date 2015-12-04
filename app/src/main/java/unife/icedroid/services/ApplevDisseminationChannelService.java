@@ -1,6 +1,5 @@
 package unife.icedroid.services;
 
-import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 import unife.icedroid.core.BaseMessage;
@@ -29,9 +28,6 @@ public class ApplevDisseminationChannelService extends Thread {
 
 
     public ApplevDisseminationChannelService() {
-        //super(TAG);
-        //setIntentRedelivery(true);
-
         messageQueueManager = MessageQueueManager.getMessageQueueManager();
         channelListManager = ChannelListManager.getChannelListManager();
         neighborhoodManager = NeighborhoodManager.getNeighborhoodManager();
@@ -170,7 +166,6 @@ public class ApplevDisseminationChannelService extends Thread {
                 }
                 break;
             default:
-                /** Here to handle more routing algorithms' philosophies **/
                 break;
         }
 

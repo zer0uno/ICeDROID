@@ -12,16 +12,17 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class MessageDispatcher extends Thread {
-    private static final String TAG = "MessageDispatcher";
+public class MessageDispatcherThread extends Thread {
+    private static final String TAG = "MessageDispatcherThread";
     private static final boolean DEBUG = true;
-    private static final Settings s = Settings.getSettings();
 
+    private Settings s;
     private Context context;
     private ArrayList<DatagramPacket> packets;
     private ApplevDisseminationChannelService ADCThread;
 
-    public MessageDispatcher(Context context) {
+    public MessageDispatcherThread(Settings s, Context context) {
+        this.s = s;
         this.context = context;
         this.packets = new ArrayList<>(0);
         ADCThread = Settings.getSettings().getADCThread();
@@ -32,8 +33,8 @@ public class MessageDispatcher extends Thread {
         DatagramPacket packet;
         ByteArrayInputStream byteArrayInputStream;
         ObjectInputStream rawMessage;
-        BaseMessage message;
-        String messageSource;
+        BaseMessage baseMessage;
+        Intent intent;
 
         while (!Thread.interrupted()) {
 
@@ -51,24 +52,21 @@ public class MessageDispatcher extends Thread {
             try {
                 byteArrayInputStream = new ByteArrayInputStream(packet.getData());
                 rawMessage = new ObjectInputStream(byteArrayInputStream);
-                message = (BaseMessage) rawMessage.readObject();
+                baseMessage = (BaseMessage) rawMessage.readObject();
 
-                messageSource = message.getHostID();
-
-                if (!messageSource.equals(s.getHostID())) {
-                    Log.i(TAG, "Received message: " + message);
+                //Filter out messages generated from this host
+                if (!baseMessage.getHostID().equals(s.getHostID())) {
                     //Set message reception time
-                    message.setReceptionTime(new Date(System.currentTimeMillis()));
+                    baseMessage.setReceptionTime(new Date(System.currentTimeMillis()));
 
-                    Intent intent;
-                    if (message.getTypeOfMessage().equals(ICeDROIDMessage.ICEDROID_MESSAGE)) {
-                        intent = new Intent(context, ApplevDisseminationChannelService.class);
+                    if (baseMessage.getTypeOfMessage().equals(ICeDROIDMessage.ICEDROID_MESSAGE)) {
+                        intent = new Intent();
                         intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
-                                                                                        message);
+                                                                                    baseMessage);
                         ADCThread.add(intent);
                     } else {
                         intent = new Intent(context, HelloMessageService.class);
-                        intent.putExtra(HelloMessage.EXTRA_HELLO_MESSAGE, message);
+                        intent.putExtra(HelloMessage.EXTRA_HELLO_MESSAGE, baseMessage);
                         context.startService(intent);
                     }
                 }

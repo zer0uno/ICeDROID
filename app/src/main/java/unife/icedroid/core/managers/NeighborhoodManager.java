@@ -48,7 +48,7 @@ public class NeighborhoodManager {
 
             NeighborRemoveTask task;
             if (ni != null) {
-                ni.copyFromNeighbor(neighbor);
+                ni.update(neighbor);
                 task = new NeighborRemoveTask(this, ni);
             } else {
                 neighborsList.add(neighbor);
@@ -68,10 +68,7 @@ public class NeighborhoodManager {
     }
 
     public synchronized void remove(NeighborInfo neighbor) {
-        long x = System.currentTimeMillis();
-        long y = neighbor.getLastTimeSeen().getTime();
-        long z = ttlOfNeighbor;
-        if (x > y + z) {
+        if (System.currentTimeMillis() > neighbor.getLastTimeSeen().getTime() + ttlOfNeighbor) {
             if (DEBUG) Log.i(TAG, "Deleting neighbor...");
             neighborsList.remove(neighbor);
         }
