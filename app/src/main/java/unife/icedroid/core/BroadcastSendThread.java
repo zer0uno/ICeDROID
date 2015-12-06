@@ -66,7 +66,7 @@ public class BroadcastSendThread implements Runnable {
                     if (data != null) {
                         packet = new DatagramPacket(data, data.length, broadcastAddress, recvPort);
                         socket.send(packet);
-                        Log.i(TAG, "Message sent: " + baseMessage);
+                        //Log.i(TAG, "Message sent: " + baseMessage);
                     }
                 }
             } catch (Exception ex) {

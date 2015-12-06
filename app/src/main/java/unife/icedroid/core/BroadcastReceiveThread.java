@@ -27,11 +27,9 @@ public class BroadcastReceiveThread implements Runnable {
     public void run() {
         if (!Thread.interrupted()) {
             try {
-                DatagramPacket packet;
-                byte[] data;
+                byte[] data = new byte[s.getMessageSize()];
+                DatagramPacket packet = new DatagramPacket(data, data.length);
                 while (true) {
-                    data = new byte[s.getMessageSize()];
-                    packet = new DatagramPacket(data, data.length);
                     socket.receive(packet);
                     //Filter out packets sent from this host
                     if (!packet.getAddress().getHostAddress().equals(s.getHostIP())) {

@@ -18,14 +18,14 @@ public class SprayAndWaitThread extends Thread {
     private static final boolean DEBUG = true;
 
     private ArrayList<ICeDROIDMessage> messages;
-    private ArrayList<ArrayList<NeighborInfo>> ackLists;
+    private ArrayList<ArrayList<String>> ackLists;
     private ArrayList<Integer> Ls;
     private Lock lock;
-    private Condition mQueue;
+    private Condition condition;
 
     public SprayAndWaitThread() {
         lock = new ReentrantLock();
-        mQueue = lock.newCondition();
+        condition = lock.newCondition();
         messages = new ArrayList<>(0);
         ackLists = new ArrayList<>(0);
         Ls = new ArrayList<>(0);
@@ -37,7 +37,7 @@ public class SprayAndWaitThread extends Thread {
         //Wait for the first message
         while (messages.size() == 0) {
             try {
-                mQueue.await();
+                condition.await();
             } catch (Exception ex) {
             }
         }
@@ -49,9 +49,9 @@ public class SprayAndWaitThread extends Thread {
         int L = 1;
         int msgL;
         Intent intent = new Intent();
-        ArrayList<NeighborInfo> ackL;
+        ArrayList<String> ackL;
         int index = 0;
-        long lastUpdate = 0;
+
         while (!Thread.interrupted()) {
             lock.lock();
             if (messages.size() == 0) {
@@ -79,9 +79,9 @@ public class SprayAndWaitThread extends Thread {
                     ackL = ackLists.get(index);
                     for (NeighborInfo neighbor : neighborhoodManager.
                                                          whoHasThisMessageButNotInterested(msg)) {
-                        if (!ackL.contains(neighbor)) {
+                        if (!ackL.contains(neighbor.getHostID())) {
                             msgL = (int) Math.ceil(L / 2);
-                            ackL.add(neighbor);
+                            ackL.add(neighbor.getHostID());
                             if (msgL <= 0) {
                                 break;
                             }
@@ -128,7 +128,10 @@ public class SprayAndWaitThread extends Thread {
                 lock.unlock();
 
                 if (waitForUpdate) {
-                    lastUpdate = neighborhoodManager.isThereAnUpdate(lastUpdate);
+                    //lastUpdate = neighborhoodManager.isThereAnUpdate(lastUpdate);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception ex) {}
                 }
             }
         }
@@ -139,9 +142,9 @@ public class SprayAndWaitThread extends Thread {
         lock.lock();
         if (!isInterrupted()) {
             messages.add(msg);
-            ackLists.add(new ArrayList<NeighborInfo>());
+            ackLists.add(new ArrayList<String>());
             Ls.add(null);
-            mQueue.signal();
+            condition.signal();
             result = true;
         }
         lock.unlock();
