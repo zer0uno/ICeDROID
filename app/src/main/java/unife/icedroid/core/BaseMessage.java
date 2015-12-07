@@ -7,7 +7,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Date;
 
-public abstract class BaseMessage implements Serializable {
+public abstract class BaseMessage implements Serializable, Cloneable {
     private static final String TAG = "BaseMessage";
     private static final boolean DEBUG = true;
 
@@ -157,5 +157,16 @@ public abstract class BaseMessage implements Serializable {
             if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error getting size of the message");
         }
         return byteArrayOutputStream.toByteArray().length;
+    }
+
+    @Override
+    public BaseMessage clone() {
+        BaseMessage baseMessage = null;
+        try {
+            baseMessage = (BaseMessage) super.clone();
+            baseMessage.setCreationTime(new Date(creationTime.getTime()));
+            baseMessage.setReceptionTime(new Date(receptionTime.getTime()));
+        } catch (Exception ex) {}
+        return baseMessage;
     }
 }

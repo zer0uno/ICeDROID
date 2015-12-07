@@ -34,4 +34,9 @@ public class TxtMessage extends ICeDROIDMessage {
     public void setContentData(String txt) {
         contentData = txt;
     }
+
+    @Override
+    public TxtMessage clone() {
+        return (TxtMessage) super.clone();
+    }
 }

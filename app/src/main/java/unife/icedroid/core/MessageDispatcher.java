@@ -12,8 +12,8 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class MessageDispatcherThread extends Thread {
-    private static final String TAG = "MessageDispatcherThread";
+public class MessageDispatcher extends Thread {
+    private static final String TAG = "MessageDispatcher";
     private static final boolean DEBUG = true;
 
     private Settings s;
@@ -21,7 +21,7 @@ public class MessageDispatcherThread extends Thread {
     private ArrayList<DatagramPacket> packets;
     private ApplevDisseminationChannelService ADCThread;
 
-    public MessageDispatcherThread(Settings s, Context context) {
+    public MessageDispatcher(Settings s, Context context) {
         this.s = s;
         this.context = context;
         this.packets = new ArrayList<>(0);
@@ -29,14 +29,14 @@ public class MessageDispatcherThread extends Thread {
     }
 
 
-    public void run() {
-        DatagramPacket packet;
+    public void dispatch(DatagramPacket packet) {
+        //DatagramPacket packet;
         ByteArrayInputStream byteArrayInputStream;
         ObjectInputStream rawMessage;
         BaseMessage baseMessage;
         Intent intent;
 
-        while (!Thread.interrupted()) {
+        /*while (!Thread.interrupted()) {
 
             synchronized (packets) {
                 while (packets.size() == 0) {
@@ -47,7 +47,7 @@ public class MessageDispatcherThread extends Thread {
                 }
                 packet = packets.get(0);
                 packets.remove(0);
-            }
+            }*/
 
             try {
                 byteArrayInputStream = new ByteArrayInputStream(packet.getData());
@@ -79,10 +79,9 @@ public class MessageDispatcherThread extends Thread {
         }
     }
 
-    public void add(DatagramPacket packet) {
+    /*public void add(DatagramPacket packet) {
         synchronized (packets) {
             packets.add(packet);
             packets.notifyAll();
         }
-    }
-}
+    }*/

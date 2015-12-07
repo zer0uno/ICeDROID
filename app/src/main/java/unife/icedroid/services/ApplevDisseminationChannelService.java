@@ -50,7 +50,7 @@ public class ApplevDisseminationChannelService extends Thread {
             }
 
             ICeDROIDMessage iceMessage =
-                    (ICeDROIDMessage) intent.getSerializableExtra(EXTRA_ADC_MESSAGE);
+                                (ICeDROIDMessage) intent.getSerializableExtra(EXTRA_ADC_MESSAGE);
 
             //There's a new regular message, first it must be decided whether to cache or not
             //and following whether to forward it or not

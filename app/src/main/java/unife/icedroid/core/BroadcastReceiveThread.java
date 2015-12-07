@@ -13,14 +13,15 @@ public class BroadcastReceiveThread implements Runnable {
     private Settings s;
     private DatagramSocket socket;
     private Context context;
-    private MessageDispatcherThread messageDispatcherThread;
+    private MessageDispatcher messageDispatcher;
 
     public BroadcastReceiveThread(Settings s, Context context, DatagramSocket socket) {
         this.s = s;
         this.context = context;
         this.socket = socket;
-        messageDispatcherThread = new MessageDispatcherThread(s, context);
-        messageDispatcherThread.start();
+        messageDispatcher = new MessageDispatcher(s, context);
+        messageDispatcher.start();
+
     }
 
     @Override
@@ -28,12 +29,13 @@ public class BroadcastReceiveThread implements Runnable {
         if (!Thread.interrupted()) {
             try {
                 byte[] data = new byte[s.getMessageSize()];
-                DatagramPacket packet = new DatagramPacket(data, data.length);
+                DatagramPacket packet;
                 while (true) {
+                    packet = new DatagramPacket(data, data.length);
                     socket.receive(packet);
                     //Filter out packets sent from this host
                     if (!packet.getAddress().getHostAddress().equals(s.getHostIP())) {
-                        messageDispatcherThread.add(packet);
+                        messageDispatcher.dispatch(packet);
                     }
                 }
             } catch (Exception ex) {
@@ -41,6 +43,5 @@ public class BroadcastReceiveThread implements Runnable {
                 if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error in BroadcastReceiveThread");
             }
         }
-        messageDispatcherThread.interrupt();
     }
 }

@@ -3,6 +3,7 @@ package unife.icedroid;
 import android.content.Context;
 import android.util.Log;
 import unife.icedroid.core.ICeDROIDMessage;
+import unife.icedroid.core.managers.MessageQueueManager;
 import unife.icedroid.services.ApplevDisseminationChannelService.OnMessageReceiveListener;
 import java.io.FileOutputStream;
 

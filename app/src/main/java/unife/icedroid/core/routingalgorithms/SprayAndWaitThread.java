@@ -19,7 +19,6 @@ public class SprayAndWaitThread extends Thread {
 
     private ArrayList<ICeDROIDMessage> messages;
     private ArrayList<ArrayList<String>> ackLists;
-    private ArrayList<Integer> Ls;
     private Lock lock;
     private Condition condition;
 
@@ -28,7 +27,6 @@ public class SprayAndWaitThread extends Thread {
         condition = lock.newCondition();
         messages = new ArrayList<>(0);
         ackLists = new ArrayList<>(0);
-        Ls = new ArrayList<>(0);
     }
 
     @Override
@@ -61,60 +59,60 @@ public class SprayAndWaitThread extends Thread {
                 lock.unlock();
                 msg = messages.get(index);
 
-                if (!isExpired(msg)) {
+                if (!messageQueueManager.isExpired(msg)) {
 
-                    if (Ls.get(index) == null) {
-                        Ls.remove(index);
-                        Ls.add(index, L);
-                        msgL = L;
+                    if (msg.getProperty("L") == null) {
+                        msg.setProperty("L", L);
+                        ICeDROIDMessage cMsg = msg.clone();
                         if (neighborhoodManager.getNumberOfNeighbors() == 0) {
                             intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
-                                                                                            msg);
+                                                                                            cMsg);
                             Settings.getSettings().getADCThread().add(intent);
                         }
                     } else {
-                        msgL = Ls.get(index);
-                    }
+                        msgL = msg.getProperty("L");
 
-                    ackL = ackLists.get(index);
-                    for (NeighborInfo neighbor : neighborhoodManager.
-                                                         whoHasThisMessageButNotInterested(msg)) {
-                        if (!ackL.contains(neighbor.getHostID())) {
-                            msgL = (int) Math.ceil(L / 2);
-                            ackL.add(neighbor.getHostID());
-                            if (msgL <= 0) {
-                                break;
+                        ackL = ackLists.get(index);
+                        for (NeighborInfo neighbor : neighborhoodManager.
+                                whoHasThisMessageButNotInterested(msg)) {
+                            if (!ackL.contains(neighbor.getHostID())) {
+                                msgL = (int) Math.ceil(L / 2);
+                                ackL.add(neighbor.getHostID());
+                                if (msgL <= 0) {
+                                    break;
+                                }
                             }
                         }
-                    }
-                    Ls.remove(index);
-                    Ls.add(index, msgL);
-
-                    if (msgL > 0) {
-                        if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
-                            msg.setProperty("L", 0);
-                            intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
-                                                                                            msg);
-                            Settings.getSettings().getADCThread().add(intent);
-                        } else {
-                            if (neighborhoodManager.
-                                    isThereNeighborNotInterestedToMessageAndNotCached(msg)) {
-                                msg.setProperty("L", msgL);
-                                intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
-                                        msg);
-                                Settings.getSettings().getADCThread().add(intent);
-                            }
-                        }
-
-                    } else {
                         msg.setProperty("L", msgL);
-                        remove(msg, index);
-                        messageQueueManager.removeMessageFromForwardingMessages(msg);
-                        messageQueueManager.removeMessageFromCachedMessages(msg);
-                        messageQueueManager.addToCache(msg);
+
+                        if (msgL > 0) {
+                            if (neighborhoodManager.isThereNeighborSubscribedToChannel(msg)) {
+                                ICeDROIDMessage cMsg = msg.clone();
+                                cMsg.setProperty("L", 0);
+                                intent.putExtra(ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE,
+                                        cMsg);
+                                Settings.getSettings().getADCThread().add(intent);
+                            } else {
+                                if (neighborhoodManager.
+                                        isThereNeighborNotInterestedToMessageAndNotCached(msg)) {
+                                    ICeDROIDMessage cMsg = msg.clone();
+                                    cMsg.setProperty("L", msgL);
+                                    intent.putExtra(
+                                         ApplevDisseminationChannelService.EXTRA_ADC_MESSAGE, cMsg);
+                                    Settings.getSettings().getADCThread().add(intent);
+                                }
+                            }
+
+                        } else {
+                            removeMessage(msg, index);
+                            messageQueueManager.removeMessageFromForwardingMessages(msg);
+                            messageQueueManager.removeMessageFromCachedMessages(msg);
+                            messageQueueManager.addToCache(msg);
+                        }
                     }
+
                 } else {
-                    remove(msg, index);
+                    removeMessage(msg, index);
                 }
 
                 boolean waitForUpdate = false;
@@ -128,7 +126,6 @@ public class SprayAndWaitThread extends Thread {
                 lock.unlock();
 
                 if (waitForUpdate) {
-                    //lastUpdate = neighborhoodManager.isThereAnUpdate(lastUpdate);
                     try {
                         Thread.sleep(1000);
                     } catch (Exception ex) {}
@@ -143,7 +140,6 @@ public class SprayAndWaitThread extends Thread {
         if (!isInterrupted()) {
             messages.add(msg);
             ackLists.add(new ArrayList<String>());
-            Ls.add(null);
             condition.signal();
             result = true;
         }
@@ -151,20 +147,10 @@ public class SprayAndWaitThread extends Thread {
         return result;
     }
 
-    public void remove(ICeDROIDMessage msg, int index) {
+    public void removeMessage(ICeDROIDMessage msg, int index) {
         lock.lock();
         messages.remove(index);
         ackLists.remove(index);
-        Ls.remove(index);
         lock.unlock();
-    }
-
-    private boolean isExpired(BaseMessage msg) {
-        if (msg.getTtl() != BaseMessage.INFINITE_TTL) {
-            if (msg.getCreationTime().getTime() + msg.getTtl() < System.currentTimeMillis()) {
-                return true;
-            }
-        }
-        return false;
     }
 }

@@ -8,7 +8,7 @@ public class ICeDROIDMessage extends BaseMessage {
     public final static String EXTRA_ICEDROID_MESSAGE = "unife.icedroid.ICEDROID_MESSAGE";
 
     private String channel;
-    private Map<String, Integer> properties;
+    private HashMap<String, Integer> properties;
 
     public ICeDROIDMessage(String channel) {
         super();
@@ -40,5 +40,15 @@ public class ICeDROIDMessage extends BaseMessage {
 
     public void setProperty(String key, Integer value) {
         properties.put(key, value);
+    }
+
+    @Override
+    public ICeDROIDMessage clone() {
+        ICeDROIDMessage iCeDROIDMessage = null;
+        try {
+            iCeDROIDMessage = (ICeDROIDMessage) super.clone();
+            iCeDROIDMessage.properties = (HashMap) properties.clone();
+        } catch (Exception ex) {}
+        return iCeDROIDMessage;
     }
 }
