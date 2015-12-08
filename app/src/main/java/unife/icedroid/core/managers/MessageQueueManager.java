@@ -147,8 +147,9 @@ public class MessageQueueManager {
 
     public void removeICeDROIDMessagesFromForwardingMessages() {
         synchronized (forwardingMessages) {
+            ArrayList<BaseMessage> fm = getForwardingMessages();
 
-            for (BaseMessage m : forwardingMessages) {
+            for (BaseMessage m : fm) {
                 if (m.getTypeOfMessage().equals(ICeDROIDMessage.ICEDROID_MESSAGE)) {
                     forwardingMessages.remove(m);
                 }
