@@ -8,6 +8,7 @@ public class NeighborInfo implements Serializable {
     public static final String EXTRA_NEIGHBOR = "unife.icedroid.NEIGHBOR";
     public static final String EXTRA_NEW_NEIGHBOR = "unife.icedroid.NEW_NEIGHBOR";
     public static final String EXTRA_NEIGHBOR_UPDATE = "unife.icedroid.NEIGHBOR_UPDATE";
+    public static final String EXTRA_NEW_CHANNELS = "unife.icedroid.NEW_CHANNELS";
 
     private String hostID;
     private String hostUsername;
@@ -27,47 +28,53 @@ public class NeighborInfo implements Serializable {
         cachedMessages = new ArrayList<>(messages);
     }
 
-    public String getHostID() {
+    public synchronized String getHostID() {
         return hostID;
     }
 
-    public String getHostUsername() {
+    public synchronized String getHostUsername() {
         return hostUsername;
     }
 
-    public Date getLastTimeSeen() {
+    public synchronized Date getLastTimeSeen() {
         return lastTimeSeen;
     }
 
-    public ArrayList<String> getHostChannels() {
+    public synchronized ArrayList<String> getHostChannels() {
         return new ArrayList<>(hostChannels);
     }
 
-    public ArrayList<ICeDROIDMessage> getCachedMessages() {
+    public synchronized ArrayList<ICeDROIDMessage> getCachedMessages() {
         return new ArrayList<>(cachedMessages);
     }
 
-    public void setHostID(String id) {
+    public synchronized void setHostID(String id) {
         hostID = id;
     }
 
-    public void setHostUsername(String username) {
+    public synchronized void setHostUsername(String username) {
         hostUsername = username;
     }
 
-    public void setLastTimeSeen(Date time) {
+    public synchronized void setLastTimeSeen(Date time) {
         lastTimeSeen = time;
     }
 
-    public void setHostChannels(ArrayList<String> channels) {
+    public synchronized void setHostChannels(ArrayList<String> channels) {
         hostChannels = new ArrayList<>(channels);
     }
 
-    public void setCachedMessages(ArrayList<ICeDROIDMessage> messages) {
+    public synchronized void setCachedMessages(ArrayList<ICeDROIDMessage> messages) {
         cachedMessages = new ArrayList<>(messages);
     }
 
-    public void update(NeighborInfo neighbor) {
+    public boolean hasInCache(ICeDROIDMessage msg) {
+        synchronized (cachedMessages) {
+            return cachedMessages.contains(msg);
+        }
+    }
+
+    public synchronized void update(NeighborInfo neighbor) {
         hostUsername = neighbor.hostUsername;
         lastTimeSeen = neighbor.lastTimeSeen;
         hostChannels = neighbor.hostChannels;
@@ -75,7 +82,7 @@ public class NeighborInfo implements Serializable {
     }
 
     @Override
-    public boolean equals(Object object) {
+    public synchronized boolean equals(Object object) {
         NeighborInfo nb = (NeighborInfo) object;
         return hostID.equals(nb.hostID);
     }

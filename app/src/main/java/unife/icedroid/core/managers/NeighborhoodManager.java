@@ -37,22 +37,26 @@ public class NeighborhoodManager {
         return instance;
     }
 
-    public boolean add(NeighborInfo neighbor) {
+    public ArrayList<String> add(NeighborInfo neighbor) {
         synchronized (neighborsList) {
-            boolean newNeighbor = false;
-
             Date lastTimeSeen = new Date(System.currentTimeMillis());
             neighbor.setLastTimeSeen(lastTimeSeen);
 
             NeighborInfo ni = isNeighborPresent(neighbor);
 
             NeighborRemoveTask task;
+            ArrayList<String> newChannels = null;
             if (ni != null) {
+                newChannels = new ArrayList<>(0);
+                for (String c : neighbor.getHostChannels()) {
+                    if (!ni.getHostChannels().contains(c)) {
+                        newChannels.add(c);
+                    }
+                }
                 ni.update(neighbor);
                 task = new NeighborRemoveTask(this, ni);
             } else {
                 neighborsList.add(neighbor);
-                newNeighbor = true;
                 task = new NeighborRemoveTask(this, neighbor);
             }
 
@@ -63,7 +67,7 @@ public class NeighborhoodManager {
             //Notify that an update was done
             neighborsList.notifyAll();
 
-            return newNeighbor;
+            return newChannels;
         }
     }
 
@@ -71,6 +75,17 @@ public class NeighborhoodManager {
         if (System.currentTimeMillis() > neighbor.getLastTimeSeen().getTime() + ttlOfNeighbor) {
             if (DEBUG) Log.i(TAG, "Deleting neighbor...");
             neighborsList.remove(neighbor);
+        }
+    }
+
+    public NeighborInfo getNeighborByID(String ID) {
+        synchronized (neighborsList) {
+            for (NeighborInfo n : neighborsList) {
+                if (n.getHostID().equals(ID)) {
+                    return n;
+                }
+            }
+            return null;
         }
     }
 

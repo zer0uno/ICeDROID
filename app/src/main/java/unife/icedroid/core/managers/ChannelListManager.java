@@ -1,8 +1,11 @@
 package unife.icedroid.core.managers;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import unife.icedroid.core.ICeDROIDMessage;
+import unife.icedroid.utils.Settings;
+
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
@@ -11,6 +14,7 @@ import java.util.ArrayList;
 public class ChannelListManager {
     private static final String TAG = "ChannelListManager";
     private static final boolean DEBUG = true;
+    public static final String EXTRA_NEW_CHANNEL = "unife.icedroid.NEW_CHANNEL";
 
     private static final String channelsFileName = "channels";
     private volatile static ChannelListManager instance = null;
@@ -60,6 +64,11 @@ public class ChannelListManager {
                 fos.write((channel + "\n").getBytes());
                 fos.close();
                 if (DEBUG) Log.i(TAG, "Attachment to channel: " + channel);
+
+                Intent intent = new Intent();
+                intent.putExtra(EXTRA_NEW_CHANNEL, true);
+                Settings.getSettings().getADCThread().add(intent);
+
             } catch (Exception ex) {
                 String msg = ex.getMessage();
                 if (DEBUG) Log.e(TAG, (msg != null) ? msg : "Error sticking to channel");

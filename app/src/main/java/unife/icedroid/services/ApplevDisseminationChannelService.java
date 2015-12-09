@@ -61,8 +61,8 @@ public class ApplevDisseminationChannelService extends Thread {
                         case SPRAY_AND_WAIT:
                             messageQueueManager.removeMessageFromForwardingMessages(iceMessage);
                             messageQueueManager.removeMessageFromCachedMessages(iceMessage);
-                            forwardMessage(iceMessage, true);
                             messageQueueManager.addToCache(iceMessage);
+                            forwardMessage(iceMessage, true);
                             break;
                         default:
                             break;
@@ -102,6 +102,12 @@ public class ApplevDisseminationChannelService extends Thread {
                     }
                 }
 
+            } else if (intent.hasExtra(ChannelListManager.EXTRA_NEW_CHANNEL)) {
+                for (ICeDROIDMessage msg : messageQueueManager.getCachedMessages()) {
+                    if (channelListManager.isSubscribedToChannel(msg)) {
+                        onMessageReceiveListener.receive(msg);
+                    }
+                }
             }
             //There's a new neighbor or a neighbor update
             else {
@@ -119,6 +125,17 @@ public class ApplevDisseminationChannelService extends Thread {
                     //If everyone has a message then stop forwarding it
                     if (DEBUG)
                         Log.i(TAG, "Handling an HelloMessage UPDATE " + helloMessage.getMsgID());
+
+                    ArrayList<String> newChannels = (ArrayList<String>) intent.
+                                            getSerializableExtra(NeighborInfo.EXTRA_NEW_CHANNELS);
+                    NeighborInfo n = neighborhoodManager.getNeighborByID(helloMessage.getHostID());
+                    for (ICeDROIDMessage msg : messageQueueManager.getCachedMessages()) {
+                        if (newChannels.contains(msg.getChannel())) {
+                            if (!n.hasInCache(msg)) {
+                                messageQueueManager.addToForwardingMessages(msg);
+                            }
+                        }
+                    }
 
                     ArrayList<BaseMessage> fm = messageQueueManager.getForwardingMessages();
 

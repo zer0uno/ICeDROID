@@ -40,17 +40,19 @@ public class HelloMessageService extends Service {
 
 
             NeighborInfo neighbor = createNeighborInfo(helloMessage);
-            boolean newNeighbor = NeighborhoodManager.getNeighborhoodManager().add(neighbor);
+            ArrayList<String> newChannels = NeighborhoodManager.getNeighborhoodManager().
+                                                                            add(neighbor);
 
             intent = new Intent();
             intent.putExtra(HelloMessage.EXTRA_HELLO_MESSAGE, helloMessage);
 
-            if (newNeighbor) {
+            if (newChannels == null) {
                 //If there is a new neighbor then there's need to recalculate forwarding messages
                 intent.putExtra(NeighborInfo.EXTRA_NEW_NEIGHBOR, true);
             } else {
                 //If all neighbors have a message, then it's needed to stop forwarding it
                 intent.putExtra(NeighborInfo.EXTRA_NEIGHBOR_UPDATE, true);
+                intent.putExtra(NeighborInfo.EXTRA_NEW_CHANNELS, newChannels);
             }
             ADCThread.add(intent);
         }

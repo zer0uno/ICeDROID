@@ -1,7 +1,6 @@
 package unife.icedroid.core.routingalgorithms;
 
 import android.content.Intent;
-import unife.icedroid.core.BaseMessage;
 import unife.icedroid.core.NeighborInfo;
 import unife.icedroid.core.ICeDROIDMessage;
 import unife.icedroid.core.managers.MessageQueueManager;
@@ -21,12 +20,14 @@ public class SprayAndWaitThread extends Thread {
     private ArrayList<ArrayList<String>> ackLists;
     private Lock lock;
     private Condition condition;
+    private boolean stopped;
 
     public SprayAndWaitThread() {
         lock = new ReentrantLock();
         condition = lock.newCondition();
         messages = new ArrayList<>(0);
         ackLists = new ArrayList<>(0);
+        stopped = false;
     }
 
     @Override
@@ -50,10 +51,11 @@ public class SprayAndWaitThread extends Thread {
         ArrayList<String> ackL;
         int index = 0;
 
-        while (!Thread.interrupted()) {
+        while (!isInterrupted()) {
             lock.lock();
             if (messages.size() == 0) {
                 interrupt();
+                stopped = true;
                 lock.unlock();
             } else {
                 lock.unlock();
@@ -137,10 +139,10 @@ public class SprayAndWaitThread extends Thread {
     public boolean add(ICeDROIDMessage msg) {
         boolean result = false;
         lock.lock();
-        if (!isInterrupted()) {
+        if (!stopped) {
             messages.add(msg);
             ackLists.add(new ArrayList<String>());
-            condition.signal();
+            condition.signalAll();
             result = true;
         }
         lock.unlock();
