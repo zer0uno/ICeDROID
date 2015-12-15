@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ICeDROIDMessage extends BaseMessage {
+    private static final long serialVersionUID = 1;
     public static final String ICEDROID_MESSAGE = "ICeDROIDMessage";
     public final static String EXTRA_ICEDROID_MESSAGE = "unife.icedroid.ICEDROID_MESSAGE";
 

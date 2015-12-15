@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public abstract class BaseMessage implements Serializable, Cloneable {
+    private static final long serialVersionUID = 1;
     private static final String TAG = "BaseMessage";
     private static final boolean DEBUG = true;
 

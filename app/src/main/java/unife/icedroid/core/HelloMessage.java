@@ -5,6 +5,7 @@ import unife.icedroid.core.managers.ChannelListManager;
 import java.util.ArrayList;
 
 public class HelloMessage extends BaseMessage {
+    private static final long serialVersionUID = 1;
     public static final String HELLO_MESSAGE = "helloMessage";
     public static final String EXTRA_HELLO_MESSAGE = "unife.icedroid.HELLO_MESSAGE";
 

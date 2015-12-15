@@ -3,7 +3,7 @@ package unife.icedroid;
 import unife.icedroid.core.ICeDROIDMessage;
 
 public class TxtMessage extends ICeDROIDMessage {
-
+    private static final long serialVersionUID = 1;
     private String group;
     private String contentData;
 
