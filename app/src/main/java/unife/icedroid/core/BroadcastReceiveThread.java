@@ -20,8 +20,6 @@ public class BroadcastReceiveThread implements Runnable {
         this.context = context;
         this.socket = socket;
         messageDispatcher = new MessageDispatcher(s, context);
-        messageDispatcher.start();
-
     }
 
     @Override

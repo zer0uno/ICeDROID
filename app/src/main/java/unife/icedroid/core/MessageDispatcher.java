@@ -12,7 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class MessageDispatcher extends Thread {
+public class MessageDispatcher {
     private static final String TAG = "MessageDispatcher";
     private static final boolean DEBUG = true;
 
@@ -35,19 +35,6 @@ public class MessageDispatcher extends Thread {
         ObjectInputStream rawMessage;
         BaseMessage baseMessage;
         Intent intent;
-
-        /*while (!Thread.interrupted()) {
-
-            synchronized (packets) {
-                while (packets.size() == 0) {
-                    try {
-                        packets.wait();
-                    } catch (Exception ex) {
-                    }
-                }
-                packet = packets.get(0);
-                packets.remove(0);
-            }*/
 
             try {
                 byteArrayInputStream = new ByteArrayInputStream(packet.getData());
@@ -78,10 +65,3 @@ public class MessageDispatcher extends Thread {
             }
         }
     }
-
-    /*public void add(DatagramPacket packet) {
-        synchronized (packets) {
-            packets.add(packet);
-            packets.notifyAll();
-        }
-    }*/
